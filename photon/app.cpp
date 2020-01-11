@@ -14,6 +14,8 @@
 // TODO: remove before deployment so firmware can be updated in the field.
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
+// TODO: Remove or replace stuff that's commented out.
+
 ////////////////////////////////////////////////////////////////////////////////
 // STRUCTS.
 
