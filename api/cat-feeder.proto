@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package catfeeder.api;
+
+option java_package = "com.jonkimbel.catfeeder.proto";
+
+message Request {
+
+}
+
+message Response {
+
+}
