@@ -1,10 +1,15 @@
+package com.jonkimbel.catfeeder;
+
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.StringTokenizer;
 
 public class HttpServer {
   private final Socket socket;
+  private final static String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/template.html";
 
   public static Thread threadForConnection(Socket socket) {
     HttpServer server = new HttpServer(socket);
@@ -45,21 +50,31 @@ public class HttpServer {
     String method = tokenizer.nextToken().toUpperCase();
 
     if ("GET".equals(method)) {
-      System.out.printf("%s - Request OK.\n", new Date());
-      writeHeader(printWriter, Http.ResponseCode.OK);
+      System.out.printf("%s - request OK.\n", new Date());
+      String body = formatBody(TEMPLATE_PATH);
+      writeHeader(printWriter, Http.ResponseCode.OK, /* contentLength = */ body.length());
+      printWriter.print(body);
+      printWriter.flush();
     } else {
       System.out.printf("%s - %s Not Implemented.\n", new Date(), method);
-      writeHeader(printWriter, Http.ResponseCode.NOT_IMPLEMENTED);
+      writeHeader(printWriter, Http.ResponseCode.NOT_IMPLEMENTED, /* contentLength = */ 0);
     }
   }
 
-  private static void writeHeader(PrintWriter printWriter, Http.ResponseCode responseCode) {
+  private static void writeHeader(PrintWriter printWriter, Http.ResponseCode responseCode,
+      int contentLength) {
     printWriter.printf("HTTP/1.1 %s\n", responseCode);
     printWriter.println("Server: JonKimbel/CatFeeder HttpServer");
     printWriter.printf("Date: %s\n", new Date());
     printWriter.println("Content-type: text/html");
-    printWriter.println("Content-length: 0");
+    printWriter.printf("Content-length: %d\n", contentLength);
     printWriter.println();
     printWriter.flush();
+  }
+
+  private String formatBody(String templatePath) throws IOException {
+    String template =
+        new String(Files.readAllBytes(new File(getClass().getResource(templatePath).getFile()).toPath()));
+    return template;
   }
 }

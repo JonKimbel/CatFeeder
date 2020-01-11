@@ -1,3 +1,5 @@
+package com.jonkimbel.catfeeder;
+
 public interface Http {
   public enum ResponseCode {
     OK("200 OK"),
