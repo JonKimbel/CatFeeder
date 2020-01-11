@@ -3,8 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title>JonKimbel/CatFeeder</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 </head>
 <body>
-This server cannot feed any cats yet.
+  <div class="w3-black w3-xlarge" id="tour">
+    <div class="w3-white w3-container w3-content w3-padding-64" style="max-width:800px">
+      <h1>JonKimbel/CatFeeder</h1>
+
+      <ul class="w3-ul w3-border w3-black">
+        <li class="w3-padding">Last feeding time: {{last_feeding}}</li>
+        <li class="w3-padding">Next feeding time: {{next_feeding}}</li>
+      </ul>
+
+      <form action="/write" method="get" class="w3-padding w3-black">
+        <p>Update feeding schedule:</p>
+
+        <input type="radio" class="w3-radio" name="feed_schedule" value="mornings"
+            {{mornings?checked}}>
+        <span class="w3-text-cyan">Auto-feed in the mornings</span><br>
+
+        <input type="radio" class="w3-radio" name="feed_schedule" value="everything"
+            {{just_mornings?checked}}>
+        <span class="w3-text-cyan">Auto-feed in mornings and evenings</span><br>
+
+        <p><p>
+
+        <input class="w3-button w3-white w3-hover-cyan" type="submit" value="Submit">
+      </form>
+    </div>
+  </div>
 </body>
 </html>
