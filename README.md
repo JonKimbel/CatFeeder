@@ -27,7 +27,22 @@ While you're on their site, consider donating to the nanopb developer :)
 
 ### Server
 
-TODO: build server then document how to run it here.
+#### Before you begin
+
+1.  Install JDK 11 from [here](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html) and set JAVA_HOME
+1.  Install Bazel from
+[here](https://docs.bazel.build/versions/master/install-windows.html#installing-menu).
+
+#### Compiling & running
+
+To compile and run the server, run the following from the `server/` directory:
+
+```
+bazel run server/com/jonkimbel/catfeeder:catfeeder
+```
+
+OR open the `server/` project in IntelliJ and run the "run-catfeeder"
+configuration.
 
 ### Particle Photon (cat feeder firmware)
 
@@ -42,7 +57,8 @@ TODO: build server then document how to run it here.
 
 #### Compiling & flashing
 
-To compile the cat feeder firmware, run the following from the photon/ directory:
+To compile the cat feeder firmware, run the following from the `photon/`
+directory:
 
 ```
 particle compile photon --saveTo=out.bin

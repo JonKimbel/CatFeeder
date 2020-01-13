@@ -2,6 +2,7 @@ package com.jonkimbel.catfeeder;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -73,8 +74,8 @@ public class HttpServer {
   }
 
   private String formatBody(String templatePath) throws IOException {
-    String template =
-        new String(Files.readAllBytes(new File(getClass().getResource(templatePath).getFile()).toPath()));
+    String template = new String(getClass().getResourceAsStream(templatePath).readAllBytes(),
+        StandardCharsets.UTF_8);
     return template;
   }
 }
