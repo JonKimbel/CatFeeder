@@ -23,11 +23,7 @@ public class TemplateFiller {
       if (result == READY_TO_READ_MATCH) {
         String key = tokenFinder.read().toString();
 
-        System.err.printf("%s\n", values.keySet());
-
         if (!values.containsKey(key)) {
-          System.err.printf("%s - TemplateFiller wasn't given input for key: '%s'\n", new Date(),
-           key);
           continue;
         }
 

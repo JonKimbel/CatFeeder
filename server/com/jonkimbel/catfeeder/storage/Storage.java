@@ -56,5 +56,6 @@ public class Storage {
   public void setItem(Item item, Object value) {
     cache.put(item, value);
 
+    // TODO: implement writing to disk.
   }
 }

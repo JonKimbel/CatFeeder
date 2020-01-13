@@ -7,25 +7,13 @@ java_binary(
     srcs = ["App.java"],
     main_class = "com.jonkimbel.catfeeder.App",
     deps = [
-        ":library",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-java_library(
-    name = "library",
-    srcs = [
-        "Http.java",
-        "HttpServer.java",
+        "//com/jonkimbel/catfeeder/server",
+        "//com/jonkimbel/catfeeder/storage",
+        "//com/jonkimbel/catfeeder/template",
+        "//com/jonkimbel/catfeeder/proto:preferences_java_proto",
     ],
     resources = [
         "template.html",
     ],
-    deps = [
-        "//com/jonkimbel/catfeeder/storage",
-        "//com/jonkimbel/catfeeder/template",
-        "//com/jonkimbel/catfeeder/proto:preferences_java_proto",
-        "@maven//:org_xerial_sqlite_jdbc",
-        "@maven//:org_checkerframework_checker_qual",
-    ],
+    visibility = ["//visibility:public"],
 )

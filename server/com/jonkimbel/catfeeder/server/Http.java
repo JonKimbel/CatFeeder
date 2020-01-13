@@ -1,4 +1,4 @@
-package com.jonkimbel.catfeeder;
+package com.jonkimbel.catfeeder.server;
 
 public interface Http {
   public enum ResponseCode {
