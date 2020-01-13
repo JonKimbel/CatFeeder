@@ -14,6 +14,10 @@ git config core.hooksPath hooks
 
 ### API (backend + frontend)
 
+Download and unzip a release of
+[protoc](https://github.com/protocolbuffers/protobuf/releases) and add the
+contents of its `bin/` directory to your PATH.
+
 Download the latest stable release of nanopb from
 [here](https://jpa.kapsi.fi/nanopb/) and add the contents of generator-bin to
 your PATH, then run the following commands from this directory.
