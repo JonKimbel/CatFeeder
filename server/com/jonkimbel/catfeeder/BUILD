@@ -23,6 +23,7 @@ java_library(
     ],
     deps = [
         "//com/jonkimbel/catfeeder/storage",
+        "//com/jonkimbel/catfeeder/template",
         "//com/jonkimbel/catfeeder/proto:preferences_java_proto",
         "@maven//:org_xerial_sqlite_jdbc",
         "@maven//:org_checkerframework_checker_qual",

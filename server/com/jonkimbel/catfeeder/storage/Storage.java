@@ -44,11 +44,7 @@ public class Storage {
       return cache.get(item);
     }
 
-    Object itemFromDisk = null;
-    try {
-      itemFromDisk = item.parser.parse(new File(item.filename));
-    } catch (IOException e) {
-    }
+    Object itemFromDisk = item.parser.parse(item.filename);
 
     if (itemFromDisk != null) {
       cache.put(item, itemFromDisk);

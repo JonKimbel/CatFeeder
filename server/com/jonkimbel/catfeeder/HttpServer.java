@@ -1,12 +1,19 @@
 package com.jonkimbel.catfeeder;
 
+import com.jonkimbel.catfeeder.storage.Storage;
+import com.jonkimbel.catfeeder.template.TemplateFiller;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
+
+import com.jonkimbel.catfeeder.proto.PreferencesOuterClass.Preferences;
 
 public class HttpServer {
   private final Socket socket;
@@ -51,6 +58,9 @@ public class HttpServer {
     String method = tokenizer.nextToken().toUpperCase();
 
     if ("GET".equals(method)) {
+      // TODO: handle /write?feed_schedule=mornings and mornings_and_evenings requests.
+      // TODO: reject any request that isn't / or /write.
+
       System.out.printf("%s - request OK.\n", new Date());
       String body = formatBody(TEMPLATE_PATH);
       writeHeader(printWriter, Http.ResponseCode.OK, /* contentLength = */ body.length());
@@ -76,6 +86,32 @@ public class HttpServer {
   private String formatBody(String templatePath) throws IOException {
     String template = new String(getClass().getResourceAsStream(templatePath).readAllBytes(),
         StandardCharsets.UTF_8);
-    return template;
+    Map<String, String> templateValues = new HashMap<>();
+    Preferences preferences =
+     (Preferences) Storage.getStorage().getItemBlocking(Storage.Item.PREFERENCES);
+
+    if (preferences.hasLastFeedingTimeMsSinceEpoch()) {
+      Date dateOfLastFeeding = new Date(preferences.getLastFeedingTimeMsSinceEpoch());
+      DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss a (z)");
+      templateValues.put("last_feeding", dateFormat.format(dateOfLastFeeding));
+    } else {
+      templateValues.put("last_feeding", "never");
+    }
+
+    // TODO: put real values for next_feeding.
+
+    switch (preferences.getFeedingSchedule()) {
+      case AUTO_FEED_IN_MORNINGS:
+        templateValues.put("just_mornings", "checked");
+        templateValues.put("next_feeding", "some day");
+      case AUTO_FEED_IN_MORNINGS_AND_EVENINGS:
+        templateValues.put("mornings_and_evenings", "checked");
+        templateValues.put("next_feeding", "some day");
+      default:
+        templateValues.put("next_feeding", "never");
+        break;
+    }
+
+    return new TemplateFiller(template).fill(templateValues);
   }
 }
