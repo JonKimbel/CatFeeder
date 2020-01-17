@@ -1,8 +1,10 @@
 package com.jonkimbel.catfeeder;
 
 import com.jonkimbel.catfeeder.proto.PreferencesOuterClass.Preferences;
+import com.jonkimbel.catfeeder.server.Http;
 import com.jonkimbel.catfeeder.server.HttpServer;
-import com.jonkimbel.catfeeder.server.HttpServer.BodyWriter;
+import com.jonkimbel.catfeeder.server.HttpServer.RequestHandler;
+import com.jonkimbel.catfeeder.server.Response;
 import com.jonkimbel.catfeeder.storage.Storage;
 import com.jonkimbel.catfeeder.template.TemplateFiller;
 
@@ -15,7 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class App implements BodyWriter {
+public class App implements RequestHandler {
   private static final int PORT = 8080;
   private final static String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/template.html";
   private int port;
@@ -41,11 +43,29 @@ public class App implements BodyWriter {
   }
 
   @Override
-  public String getBodyForRequest(String requestPath) throws IOException {
-    // TODO: handle /write?feed_schedule=(mornings|mornings_and_evenings) requests.
+  public Response handleRequest(Http.Method method, String requestPath) throws IOException {
+    Response.Builder responseBuilder = Response.builder();
+
+    if (method != Http.Method.GET) {
+      return responseBuilder.setResponseCode(Http.ResponseCode.NOT_IMPLEMENTED).build();
+    }
+
+    if (requestPath.equals("/")) {
+      return responseBuilder
+          .setResponseCode(Http.ResponseCode.OK)
+          .setBody(formatBody(TEMPLATE_PATH))
+          .build();
+    } else if (requestPath.startsWith("/write?")) {
+      // TODO: handle /write?feed_schedule=(mornings|mornings_and_evenings) requests.
+      return responseBuilder
+          .setResponseCode(Http.ResponseCode.OK)
+          .setBody(formatBody(TEMPLATE_PATH))
+          .build();
+    }
+
     // TODO: handle requests from photon.
-    // TODO [CLEANUP]: reject requests with unknown paths.
-    return formatBody(TEMPLATE_PATH);
+
+    return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
 
   private String formatBody(String templatePath) throws IOException {

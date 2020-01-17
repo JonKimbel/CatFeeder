@@ -5,6 +5,7 @@ java_library(
     srcs = [
         "Http.java",
         "HttpServer.java",
+        "Response.java",
     ],
     deps = [
         "@maven//:org_checkerframework_checker_qual",

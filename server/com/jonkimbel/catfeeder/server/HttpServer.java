@@ -7,20 +7,20 @@ import java.util.StringTokenizer;
 
 public class HttpServer {
   private final Socket socket;
-  private final BodyWriter bodyWriter;
+  private final RequestHandler requestHandler;
 
-  public interface BodyWriter {
-    String getBodyForRequest(String requestPath) throws IOException;
+  public interface RequestHandler {
+    Response handleRequest(Http.Method method, String requestPath) throws IOException;
   }
 
-  public static Thread threadForConnection(Socket socket, BodyWriter bodyWriter) {
-    HttpServer server = new HttpServer(socket, bodyWriter);
+  public static Thread threadForConnection(Socket socket, RequestHandler requestHandler) {
+    HttpServer server = new HttpServer(socket, requestHandler);
     return new Thread(server::connect);
   }
 
-  private HttpServer(Socket socket, BodyWriter bodyWriter) {
+  private HttpServer(Socket socket, RequestHandler requestHandler) {
     this.socket = socket;
-    this.bodyWriter = bodyWriter;
+    this.requestHandler = requestHandler;
   }
 
   private void connect() {
@@ -46,22 +46,14 @@ public class HttpServer {
 
   private void handle(BufferedReader in, PrintWriter printWriter) throws IOException {
     StringTokenizer tokenizer = new StringTokenizer(in.readLine());
-    String method = tokenizer.nextToken().toUpperCase();
+    Http.Method method = Http.Method.fromString(tokenizer.nextToken().toUpperCase());
+    String requestPath = tokenizer.nextToken();
 
-    if ("GET".equals(method)) {
-      System.out.printf("%s - request OK.\n", new Date());
+    Response response = requestHandler.handleRequest(method, requestPath);
 
-      // TODO: pass request path
-      // TODO [CLEANUP]: method to BodyWriter.
-      String body = bodyWriter.getBodyForRequest("/");
-
-      writeHeader(printWriter, Http.ResponseCode.OK, /* contentLength = */ body.length());
-      printWriter.print(body);
-      printWriter.flush();
-    } else {
-      System.out.printf("%s - %s Not Implemented.\n", new Date(), method);
-      writeHeader(printWriter, Http.ResponseCode.NOT_IMPLEMENTED, /* contentLength = */ 0);
-    }
+    writeHeader(printWriter, response.getResponseCode(), /* contentLength = */ response.getBody().length());
+    printWriter.print(response.getBody());
+    printWriter.flush();
   }
 
   private static void writeHeader(PrintWriter printWriter, Http.ResponseCode responseCode,
