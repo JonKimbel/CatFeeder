@@ -3,7 +3,7 @@ package(default_visibility = ["//com/jonkimbel/catfeeder:__subpackages__"])
 java_library(
     name = "parsers",
     srcs = [
-        "PreferencesParser.java",
+        "PreferencesSerializer.java",
     ],
     deps = [
         "//com/jonkimbel/catfeeder/storage/api",

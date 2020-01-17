@@ -1,26 +1,23 @@
 package com.jonkimbel.catfeeder.storage;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.jonkimbel.catfeeder.storage.api.Parser;
-import com.jonkimbel.catfeeder.storage.parsers.PreferencesParser;
+import com.jonkimbel.catfeeder.storage.api.Serializer;
+import com.jonkimbel.catfeeder.storage.parsers.PreferencesSerializer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Storage {
   public enum Item {
-    PREFERENCES("preferences.textpb", new PreferencesParser()),
+    PREFERENCES("preferences.textpb", new PreferencesSerializer()),
     ;
 
     public final String filename;
-    private final Parser parser;
+    private final Serializer serializer;
 
-    private Item(String filename, Parser parser) {
+    private Item(String filename, Serializer serializer) {
       this.filename = filename;
-      this.parser = parser;
+      this.serializer = serializer;
     }
   }
 
@@ -44,7 +41,7 @@ public class Storage {
       return cache.get(item);
     }
 
-    Object itemFromDisk = item.parser.parse(item.filename);
+    Object itemFromDisk = item.serializer.deserialize(item.filename);
 
     if (itemFromDisk != null) {
       cache.put(item, itemFromDisk);
@@ -53,9 +50,11 @@ public class Storage {
     return itemFromDisk;
   }
 
-  public void setItem(Item item, Object value) {
-    cache.put(item, value);
+  // TODO [CLEANUP]: synchronize to avoid race conditions
+  // TODO [CLEANUP]: write to disk on background thread
 
-    // TODO: implement writing to disk.
+  public void setItemBlocking(Item item, Object value) {
+    cache.put(item, value);
+    item.serializer.serialize(item.filename, value);
   }
 }
