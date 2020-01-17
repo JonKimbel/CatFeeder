@@ -11,3 +11,10 @@ java_library(
         "@maven//:org_checkerframework_checker_qual",
     ],
 )
+
+java_library(
+    name = "query_parser",
+    srcs = [
+        "QueryParser.java",
+    ],
+)

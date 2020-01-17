@@ -1,5 +1,7 @@
 package com.jonkimbel.catfeeder.server;
 
+// TODO [CLEANUP]: Make @AutoValue.
+
 public class Response {
   private String body;
   private Http.ResponseCode responseCode;

@@ -8,6 +8,7 @@ java_binary(
     main_class = "com.jonkimbel.catfeeder.App",
     deps = [
         "//com/jonkimbel/catfeeder/server",
+        "//com/jonkimbel/catfeeder/server:query_parser",
         "//com/jonkimbel/catfeeder/storage",
         "//com/jonkimbel/catfeeder/template",
         "//com/jonkimbel/catfeeder/proto:preferences_java_proto",
