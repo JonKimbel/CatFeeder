@@ -5,9 +5,20 @@ package catfeeder.api;
 option java_package = "com.jonkimbel.catfeeder.proto";
 
 message EmbeddedRequest {
-
+  // How long ago the device last fed the cat.
+  // Optional. Absence of this field means the device hasn't fed the cat since
+  // it was last turned on.
+  optional uint64 time_since_last_feeding_ms = 1;
 }
 
 message EmbeddedResponse {
+  // How long to wait before making another request to the server, in
+  // milliseconds.
+  // Required.
+  optional uint64 delay_until_next_check_in_ms = 1 [default = 60000];
 
+  // How long to wait before running the motor to feed that cat, in
+  // milliseconds.
+  // Optional. Absence of this field means the cat will not be auto-fed.
+  optional uint64 delay_until_next_feeding_ms = 2;
 }
