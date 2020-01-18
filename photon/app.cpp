@@ -45,6 +45,9 @@
 // Generic nanopb decoders.
 // bool decode_string(pb_istream_t *stream, const pb_field_t *field, void **arg);
 
+////////////////////////////////////////////////////////////////////////////////
+// CONSTANTS.
+
 // 400Hz = 2500us wavelength.
 // Just needs to exceed the MG996R's 2100us max pulse length.
 #define SERVO_PWM_FREQ 400
