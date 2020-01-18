@@ -4,10 +4,10 @@ package catfeeder.api;
 
 option java_package = "com.jonkimbel.catfeeder.proto";
 
-message Request {
+message EmbeddedRequest {
 
 }
 
-message Response {
+message EmbeddedResponse {
 
 }

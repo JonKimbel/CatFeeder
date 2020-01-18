@@ -2,11 +2,12 @@ package com.jonkimbel.catfeeder.backend;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences.FeedingSchedule;
+import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedResponse;
 import com.jonkimbel.catfeeder.backend.server.Http;
 import com.jonkimbel.catfeeder.backend.server.HttpServer;
 import com.jonkimbel.catfeeder.backend.server.HttpServer.RequestHandler;
 import com.jonkimbel.catfeeder.backend.server.QueryParser;
-import com.jonkimbel.catfeeder.backend.server.Response;
+import com.jonkimbel.catfeeder.backend.server.HttpResponse;
 import com.jonkimbel.catfeeder.backend.storage.Storage;
 import com.jonkimbel.catfeeder.backend.template.TemplateFiller;
 import com.jonkimbel.catfeeder.backend.time.Time;
@@ -15,26 +16,24 @@ import jdk.internal.jline.internal.Nullable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 // TODO [CLEANUP]: Add nullability tests.
 // TODO [CLEANUP]: Add unit tests.
 
-public class App implements RequestHandler {
+public class Backend implements RequestHandler {
   private static final int PORT = 8080;
-  private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/template.html";
+  private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
 
   private final Storage storage;
   private final int port;
 
   public static void main(String[] args) throws IOException {
     // TODO [CLEANUP]: take port as an argument.
-    new App(PORT).run();
+    new Backend(PORT).run();
   }
 
-  private App(int port) {
+  private Backend(int port) {
     this.port = port;
     this.storage = Storage.getStorage();
   }
@@ -51,8 +50,8 @@ public class App implements RequestHandler {
   }
 
   @Override
-  public Response handleRequest(Http.Method method, String requestPath) throws IOException {
-    Response.Builder responseBuilder = Response.builder();
+  public HttpResponse handleRequest(Http.Method method, String requestPath) throws IOException {
+    HttpResponse.Builder responseBuilder = HttpResponse.builder();
 
     if (method != Http.Method.GET) {
       return responseBuilder.setResponseCode(Http.ResponseCode.NOT_IMPLEMENTED).build();
@@ -61,7 +60,7 @@ public class App implements RequestHandler {
     if (requestPath.equals("/")) {
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setBody(formatBody(TEMPLATE_PATH))
+          .setPrintBody(formatBody(TEMPLATE_PATH))
           .build();
     } else if (requestPath.startsWith("/write?")) {
       Map<String, String> queryKeysAndValues = QueryParser.parseQuery(requestPath);
@@ -69,10 +68,14 @@ public class App implements RequestHandler {
 
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setBody(formatBody(TEMPLATE_PATH))
+          .setPrintBody(formatBody(TEMPLATE_PATH))
           .build();
     } else if (requestPath.startsWith("/photon")) {
-      // TODO: handle requests from photon.
+      // TODO: populate this proto before returning it.
+      return responseBuilder
+          .setResponseCode(Http.ResponseCode.OK)
+          .setByteBody(EmbeddedResponse.getDefaultInstance().toByteArray())
+          .build();
     }
 
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();

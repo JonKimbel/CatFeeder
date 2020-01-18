@@ -23,7 +23,7 @@ Download the latest stable release of nanopb from
 your PATH, then run the following commands from this directory.
 
 ```
-protoc -I=api --nanopb_out=photon api/cat-feeder.proto
+protoc -I=api --nanopb_out=photon api/cat_feeder.proto
 ```
 
 While you're on their site, consider donating to the nanopb developer :)
