@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+package catfeeder.proto;
+
+option java_package = "com.jonkimbel.catfeeder.backend.proto";
+
+message Preferences {
+    enum FeedingSchedule {
+        UNKNOWN_FEEDING_SCHEDULE = 0;
+        NO_FEEDING_SCHEDULE = 1;
+        AUTO_FEED_IN_MORNINGS = 2;
+        AUTO_FEED_IN_MORNINGS_AND_EVENINGS = 3;
+    }
+
+    optional FeedingSchedule feeding_schedule = 1;
+
+    optional uint64 last_feeding_time_ms_since_epoch = 2;
+
+    optional uint64 last_photon_check_in_ms_since_epoch = 3;
+}

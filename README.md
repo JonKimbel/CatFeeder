@@ -23,7 +23,6 @@ Download the latest stable release of nanopb from
 your PATH, then run the following commands from this directory.
 
 ```
-protoc -I=api --java_out=server/src/java api/cat-feeder.proto
 protoc -I=api --nanopb_out=photon api/cat-feeder.proto
 ```
 
@@ -39,14 +38,13 @@ While you're on their site, consider donating to the nanopb developer :)
 
 #### Compiling & running
 
-To compile and run the server, run the following from the `server/` directory:
+To compile and run the server, run the following from this directory:
 
 ```
-bazel run server/com/jonkimbel/catfeeder:catfeeder
+bazel run //com/jonkimbel/catfeeder/backend:backend
 ```
 
-OR open the `server/` project in IntelliJ and run the "run-catfeeder"
-configuration.
+OR open the IntelliJ project and run the `backend` configuration.
 
 ### Particle Photon (cat feeder firmware)
 
