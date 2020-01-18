@@ -63,6 +63,8 @@ public class Backend implements RequestHandler {
           .setPrintBody(formatBody(TEMPLATE_PATH))
           .build();
     } else if (requestPath.startsWith("/write?")) {
+      // TODO [CLEANUP]: switch from GET to POST for this, it results in weird
+      // re-sending issues when you refresh the page.
       Map<String, String> queryKeysAndValues = QueryParser.parseQuery(requestPath);
       updateFeedingSchedule(queryKeysAndValues.get("feed_schedule"));
 
