@@ -44,7 +44,6 @@ public class Backend implements RequestHandler {
 
     while (true) {
       Thread thread = HttpServer.threadForConnection(socket.accept(), this);
-      System.out.printf("%s - connection opened\n", new Date());
       thread.start();
     }
   }
