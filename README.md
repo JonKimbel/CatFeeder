@@ -70,4 +70,9 @@ NOTE: The "photon" in this command refers to the device model, the
 [Particle Photon](https://store.particle.io/collections/wifi/products/photon).
 It is NOT providing the name of the folder the code relies upon.
 
-TODO: figure out how to flash to photon then document here.
+Once the firmware is compiled, flash it to your device using the following
+command. Change "CatFeeder" to whatever you named your device in Particle Cloud.
+
+```
+particle flash CatFeeder out.bin
+```

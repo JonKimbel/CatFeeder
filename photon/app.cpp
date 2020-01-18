@@ -2,17 +2,12 @@
 #include <stdlib.h>
 #include <pb_decode.h>
 #include "array-list.h"
-#include "bus-boy.pb.h"
+// #include "bus-boy.pb.h"
 #include "http-client.h"
-#include "LiquidCrystal_I2C.h"
 
 // This file should #define BACKEND_DOMAIN. Defining a separate file allows me
 // to hide my domain from source control via .gitignore.
 #include "backend-info.h"
-
-// Don't auto-connect to the Particle cloud. Speeds up testing.
-// TODO: remove before deployment so firmware can be updated in the field.
-SYSTEM_MODE(SEMI_AUTOMATIC);
 
 // TODO: Remove or replace stuff that's commented out.
 
@@ -50,6 +45,17 @@ SYSTEM_MODE(SEMI_AUTOMATIC);
 // Generic nanopb decoders.
 // bool decode_string(pb_istream_t *stream, const pb_field_t *field, void **arg);
 
+// 400Hz = 2500us wavelength.
+// Just needs to exceed the MG996R's 2100us max pulse length.
+#define SERVO_PWM_FREQ 400
+
+// 900us min pulse length / 2500us PWM wavelength * 256 possible duty cycles
+#define MIN_SERVO_DUTY_CYCLE 92
+// 900us min pulse length / 2500us PWM wavelength * 256 possible duty cycles
+#define MAX_SERVO_DUTY_CYCLE 215
+
+#define SERVO_PIN D0
+
 ////////////////////////////////////////////////////////////////////////////////
 // VARIABLES.
 
@@ -72,52 +78,48 @@ ArrayList<uint8_t> responseBuffer;
 // MAIN CODE.
 
 void setup() {
-  Serial.begin(9600);
-
-  Serial.println("waiting for network");
-
-  // Cellular.on();
-  // Cellular.connect();
-  // while (!Cellular.ready()) {
-  //   delay(100);
-  // }
-
-  Serial.println("connecting...");
+  pinMode(SERVO_PIN, OUTPUT);
 }
 
 void loop() {
-  if (!httpClient.connect()) {
-    Serial.println("connection failed");
-    return;
-  }
+  analogWrite(/* pin = */ SERVO_PIN, /* value = */ MIN_SERVO_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+  delay(1000);
 
-  httpClient.sendRequest();
-  Status status = httpClient.getResponse(&responseBuffer);
-  if (status != HTTP_STATUS_OK) {
-    Serial.print("http error: ");
-    Serial.println(status);
-    return;
-  }
+  analogWrite(/* pin = */ SERVO_PIN, /* value = */ MAX_SERVO_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+  delay(1000);
 
-  // busboy_api_Response response = busboy_api_Response_init_default;
-  // response.route.funcs.decode = &decode_route;
-  // response.arrival.funcs.decode = &decode_arrival;
-  // response.temporary_message.funcs.decode = &decode_temporaryMessage;
-  // response.temporary_style.funcs.decode = &decode_temporaryStyle;
-
-  // clear_response_data();
-
-  pb_istream_t stream = pb_istream_from_buffer(
-      responseBuffer.data, responseBuffer.length);
-  // if (!pb_decode(&stream, busboy_api_Response_fields, &response)) {
-  //   Serial.println("proto decode error");
+  // if (!httpClient.connect()) {
+  //   Serial.println("connection failed");
   //   return;
   // }
-
-  // responseTime = response.time;
-
-  // Wait 60s before hitting the server again.
-  delay(60000);
+  //
+  // httpClient.sendRequest();
+  // Status status = httpClient.getResponse(&responseBuffer);
+  // if (status != HTTP_STATUS_OK) {
+  //   Serial.print("http error: ");
+  //   Serial.println(status);
+  //   return;
+  // }
+  //
+  // // busboy_api_Response response = busboy_api_Response_init_default;
+  // // response.route.funcs.decode = &decode_route;
+  // // response.arrival.funcs.decode = &decode_arrival;
+  // // response.temporary_message.funcs.decode = &decode_temporaryMessage;
+  // // response.temporary_style.funcs.decode = &decode_temporaryStyle;
+  //
+  // // clear_response_data();
+  //
+  // pb_istream_t stream = pb_istream_from_buffer(
+  //     responseBuffer.data, responseBuffer.length);
+  // // if (!pb_decode(&stream, busboy_api_Response_fields, &response)) {
+  // //   Serial.println("proto decode error");
+  // //   return;
+  // // }
+  //
+  // // responseTime = response.time;
+  //
+  // // Wait 60s before hitting the server again.
+  // delay(60000);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
