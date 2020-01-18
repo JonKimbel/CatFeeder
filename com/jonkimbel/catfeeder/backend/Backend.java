@@ -59,7 +59,7 @@ public class Backend implements RequestHandler {
     if (requestPath.equals("/")) {
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setPrintBody(formatBody(TEMPLATE_PATH))
+          .setPrintBody(formatHtml(TEMPLATE_PATH))
           .build();
     } else if (requestPath.startsWith("/write?")) {
       // TODO [CLEANUP]: switch from GET to POST for this, it results in weird
@@ -69,13 +69,16 @@ public class Backend implements RequestHandler {
 
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setPrintBody(formatBody(TEMPLATE_PATH))
+          .setPrintBody(formatHtml(TEMPLATE_PATH))
           .build();
     } else if (requestPath.startsWith("/photon")) {
       // TODO: populate this proto before returning it.
+      EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
+      response.setDelayUntilNextCheckInMs(5000);
+      response.setDelayUntilNextFeedingMs(1000);
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setByteBody(EmbeddedResponse.getDefaultInstance().toByteArray())
+          .setByteBody(response.build().toByteArray())
           .build();
     }
 
@@ -104,7 +107,7 @@ public class Backend implements RequestHandler {
     }
   }
 
-  private String formatBody(String templatePath) throws IOException {
+  private String formatHtml(String templatePath) throws IOException {
     String template = new String(getClass().getResourceAsStream(templatePath).readAllBytes(),
         StandardCharsets.UTF_8);
     Map<String, String> templateValues = new HashMap<>();
