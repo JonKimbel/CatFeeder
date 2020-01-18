@@ -22,7 +22,7 @@ import java.util.*;
 // TODO [CLEANUP]: Add unit tests.
 
 public class Backend implements RequestHandler {
-  private static final int PORT = 8080;
+  private static final int PORT = 80;
   private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
 
   private final Storage storage;

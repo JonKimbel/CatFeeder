@@ -56,7 +56,7 @@ SYSTEM_MODE(SEMI_AUTOMATIC);
 // Set up the HTTP client for communication with the backend, getting data for
 // the Northbound N 34th street stop.
 // TODO: update path.
-HttpClient httpClient(BACKEND_DOMAIN, "/", 80);
+HttpClient httpClient(BACKEND_DOMAIN, "/photon", 80);
 
 // Buffer used to hold raw data from the server.
 ArrayList<uint8_t> responseBuffer;
