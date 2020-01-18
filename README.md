@@ -18,9 +18,9 @@ Download and unzip a release of
 [protoc](https://github.com/protocolbuffers/protobuf/releases) and add the
 contents of its `bin/` directory to your PATH.
 
-Download the 4.0 release of nanopb from [here](https://jpa.kapsi.fi/nanopb/) and
-add the contents of its `generator-bin/` directory to your PATH, then run the
-following commands from this directory.
+Download the 0.3.9.4 release of nanopb from [here](https://jpa.kapsi.fi/nanopb/)
+and add the contents of its `generator-bin/` directory to your PATH, then run
+the following commands from this directory.
 
 ```
 protoc -I=api --nanopb_out=photon api/cat_feeder.proto
