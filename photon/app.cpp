@@ -45,6 +45,9 @@
 // Generic nanopb decoders.
 // bool decode_string(pb_istream_t *stream, const pb_field_t *field, void **arg);
 
+// TODO: add a big cap across the 5V line to prevent brownouts? Or get a power
+// supply.
+
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS.
 
