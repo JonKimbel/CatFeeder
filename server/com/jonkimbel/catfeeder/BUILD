@@ -11,6 +11,7 @@ java_binary(
         "//com/jonkimbel/catfeeder/server:query_parser",
         "//com/jonkimbel/catfeeder/storage",
         "//com/jonkimbel/catfeeder/template",
+        "//com/jonkimbel/catfeeder/time",
         "//com/jonkimbel/catfeeder/proto:preferences_java_proto",
     ],
     resources = [

@@ -1,6 +1,7 @@
 package com.jonkimbel.catfeeder;
 
 import com.jonkimbel.catfeeder.proto.PreferencesOuterClass.Preferences;
+import com.jonkimbel.catfeeder.proto.PreferencesOuterClass.Preferences.FeedingSchedule;
 import com.jonkimbel.catfeeder.server.Http;
 import com.jonkimbel.catfeeder.server.HttpServer;
 import com.jonkimbel.catfeeder.server.HttpServer.RequestHandler;
@@ -8,22 +9,22 @@ import com.jonkimbel.catfeeder.server.QueryParser;
 import com.jonkimbel.catfeeder.server.Response;
 import com.jonkimbel.catfeeder.storage.Storage;
 import com.jonkimbel.catfeeder.template.TemplateFiller;
+import com.jonkimbel.catfeeder.time.Time;
+import jdk.internal.jline.internal.Nullable;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 // TODO [CLEANUP]: Add nullability tests.
 // TODO [CLEANUP]: Add unit tests.
 
 public class App implements RequestHandler {
   private static final int PORT = 8080;
-  private final static String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/template.html";
+  private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/template.html";
 
   private final Storage storage;
   private final int port;
@@ -70,9 +71,9 @@ public class App implements RequestHandler {
           .setResponseCode(Http.ResponseCode.OK)
           .setBody(formatBody(TEMPLATE_PATH))
           .build();
+    } else if (requestPath.startsWith("/photon")) {
+      // TODO: handle requests from photon.
     }
-
-    // TODO: handle requests from photon.
 
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
@@ -105,28 +106,30 @@ public class App implements RequestHandler {
     Map<String, String> templateValues = new HashMap<>();
     Preferences preferences = (Preferences) storage.getItemBlocking(Storage.Item.PREFERENCES);
 
+    Date dateOfLastFeeding = null;
     if (preferences.hasLastFeedingTimeMsSinceEpoch()) {
-      Date dateOfLastFeeding = new Date(preferences.getLastFeedingTimeMsSinceEpoch());
-      DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss a (z)");
-      templateValues.put("last_feeding", dateFormat.format(dateOfLastFeeding));
+      dateOfLastFeeding = new Date(preferences.getLastFeedingTimeMsSinceEpoch());
+      templateValues.put("last_feeding", Time.format(dateOfLastFeeding));
     } else {
       templateValues.put("last_feeding", "never");
     }
 
-    // TODO: calculate next_feeding time.
+    @Nullable Date nextFeedingTime = Time.calculateNextFeedingTime(preferences, dateOfLastFeeding);
+    if (nextFeedingTime != null) {
+      templateValues.put("next_feeding", Time.format(nextFeedingTime));
+    } else {
+      templateValues.put("next_feeding", "never");
+    }
 
-    switch (preferences.getFeedingSchedule()) {
-      case AUTO_FEED_IN_MORNINGS:
-        templateValues.put("mornings", "checked");
-        templateValues.put("next_feeding", "some day");
-        break;
-      case AUTO_FEED_IN_MORNINGS_AND_EVENINGS:
-        templateValues.put("mornings_and_evenings", "checked");
-        templateValues.put("next_feeding", "some day");
-        break;
-      default:
-        templateValues.put("next_feeding", "never");
-        break;
+    // TODO [CLEANUP]: Use preferences.lastPhotonCheckInMsSinceEpoch() to warn the viewer if the
+    // embedded device hasn't communicated with the server in a while.
+
+    // TODO: Implement support for a "never auto feed" option.
+
+    if (preferences.getFeedingSchedule() == FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
+      templateValues.put("mornings", "checked");
+    } else if (preferences.getFeedingSchedule() == FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS) {
+      templateValues.put("mornings_and_evenings", "checked");
     }
 
     return new TemplateFiller(template).fill(templateValues);
