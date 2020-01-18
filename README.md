@@ -18,9 +18,9 @@ Download and unzip a release of
 [protoc](https://github.com/protocolbuffers/protobuf/releases) and add the
 contents of its `bin/` directory to your PATH.
 
-Download the latest stable release of nanopb from
-[here](https://jpa.kapsi.fi/nanopb/) and add the contents of generator-bin to
-your PATH, then run the following commands from this directory.
+Download the 4.0 release of nanopb from [here](https://jpa.kapsi.fi/nanopb/) and
+add the contents of its `generator-bin/` directory to your PATH, then run the
+following commands from this directory.
 
 ```
 protoc -I=api --nanopb_out=photon api/cat_feeder.proto
@@ -59,20 +59,13 @@ OR open the IntelliJ project and run the `backend` configuration.
 
 #### Compiling & flashing
 
-To compile the cat feeder firmware, run the following from the `photon/`
-directory:
+To compile and flash the cat feeder firmware to your device, run the following
+from the `photon/` directory. Change "CatFeeder" to whatever you named your device in Particle Cloud.
 
 ```
-particle compile photon --saveTo=out.bin
+particle compile photon --saveTo=out.bin && particle flash CatFeeder out.bin
 ```
 
 NOTE: The "photon" in this command refers to the device model, the
 [Particle Photon](https://store.particle.io/collections/wifi/products/photon).
 It is NOT providing the name of the folder the code relies upon.
-
-Once the firmware is compiled, flash it to your device using the following
-command. Change "CatFeeder" to whatever you named your device in Particle Cloud.
-
-```
-particle flash CatFeeder out.bin
-```
