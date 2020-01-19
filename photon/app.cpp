@@ -4,6 +4,7 @@
 #include "array-list.h"
 #include "cat_feeder.pb.h"
 #include "http-client.h"
+#include "servo-info.h"
 
 // This file should #define BACKEND_DOMAIN. Defining a separate file allows me
 // to hide my domain from source control via .gitignore.
@@ -15,20 +16,9 @@
 // TODO: add a big cap across the 5V line to prevent brownouts? Or get a power
 // supply.
 
-// 400Hz = 2500us wavelength.
-// Just needs to exceed the MG996R's 2100us max pulse length.
-#define SERVO_PWM_FREQ 400
-
-// 900us min pulse length / 2500us PWM wavelength * 256 possible duty cycles
-#define MIN_SERVO_DUTY_CYCLE 92
-// 900us min pulse length / 2500us PWM wavelength * 256 possible duty cycles
-#define MAX_SERVO_DUTY_CYCLE 215
-
-#define SERVO_PIN D0
-
 #define FAILURE_RETRY_DELAY_MS 1000
 
-#define FOOD_DISPENSE_WAIT_TIME 3000
+#define FOOD_DISPENSE_WAIT_TIME 1500
 
 ////////////////////////////////////////////////////////////////////////////////
 // VARIABLES.
@@ -44,9 +34,10 @@ ArrayList<uint8_t> responseBuffer;
 // MAIN CODE.
 
 void setup() {
+  RGB.control(true);
   pinMode(SERVO_PIN, OUTPUT);
 
-  RGB.control(true);
+  analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
 }
 
 void loop() {
@@ -96,9 +87,9 @@ void loop() {
     delay(response.delay_until_next_feeding_ms);
     // Dispense food.
     // TODO: handle multiple scoops of food.
-    analogWrite(/* pin = */ SERVO_PIN, /* value = */ MIN_SERVO_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
     delay(FOOD_DISPENSE_WAIT_TIME);
-    analogWrite(/* pin = */ SERVO_PIN, /* value = */ MAX_SERVO_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
 
     // TODO: do this math in a systemic way.
     delay(response.delay_until_next_check_in_ms -
