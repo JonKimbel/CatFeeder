@@ -5,12 +5,28 @@ public interface Http {
     OK("200 OK"),
     NOT_FOUND("404 Not Found"),
     NOT_IMPLEMENTED("501 Not Implemented"),
-
     ;
 
     private final String stringRepresentation;
 
     ResponseCode(String stringRepresentation) {
+      this.stringRepresentation = stringRepresentation;
+    }
+
+    @Override
+    public String toString() {
+      return stringRepresentation;
+    }
+  }
+
+  enum ContentType {
+    HTML("text/html"),
+    PROTOCOL_BUFFER("application/x-protobuf"),
+    ;
+
+    private final String stringRepresentation;
+
+    ContentType(String stringRepresentation) {
       this.stringRepresentation = stringRepresentation;
     }
 

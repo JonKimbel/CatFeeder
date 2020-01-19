@@ -57,12 +57,12 @@ public class HttpServer {
     System.out.printf("%s - response: %s\n", new Date(), httpResponse.getResponseCode());
 
     if (httpResponse.isBodyPrint()) {
-      writeHeader(printOut, httpResponse.getResponseCode(),
+      writeHeader(printOut, httpResponse.getResponseCode(), Http.ContentType.HTML,
           /* contentLength = */ httpResponse.getPrintBody().length());
       printOut.print(httpResponse.getPrintBody());
       printOut.flush();
     } else {
-      writeHeader(printOut, httpResponse.getResponseCode(),
+      writeHeader(printOut, httpResponse.getResponseCode(), Http.ContentType.PROTOCOL_BUFFER,
           /* contentLength = */ httpResponse.getByteBody().length);
       bytesOut.write(httpResponse.getByteBody(), /* offset = */ 0,
           /* length = */ httpResponse.getByteBody().length);
@@ -71,13 +71,13 @@ public class HttpServer {
   }
 
   private static void writeHeader(PrintWriter printWriter, Http.ResponseCode responseCode,
-      int contentLength) {
+      Http.ContentType contentType, int contentLength) {
     // NOTE: we need to use CRLF (\r\n or println) instead of just \n.
     // HTTP/1.1 spec dictates that CRLF be used to end lines in the HTTP response header.
     printWriter.printf("HTTP/1.1 %s\r\n", responseCode);
     printWriter.println("Server: JonKimbel/CatFeeder HttpServer");
     printWriter.printf("Date: %s\r\n", new Date());
-    printWriter.println("Content-type: text/html");
+    printWriter.printf("Content-type: %s\r\n", contentType);
     printWriter.printf("Content-length: %d\r\n", contentLength);
     printWriter.println();
     printWriter.flush();
