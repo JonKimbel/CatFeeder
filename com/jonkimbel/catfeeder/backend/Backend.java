@@ -89,7 +89,7 @@ public class Backend implements RequestHandler {
 
     long durationUntilNextFeedingMs =
         Time.calculateNextFeedingTime().toInstant().toEpochMilli() - Instant.now().toEpochMilli();
-    response.setDelayUntilNextFeedingMs(durationUntilNextFeeding);
+    response.setDelayUntilNextFeedingMs(durationUntilNextFeedingMs);
 
     long durationUntilNextCheckInMs = INTERVAL_BETWEEN_CHECK_INS_MS;
     while (Math.abs(durationUntilNextCheckInMs - durationUntilNextFeedingMs) <

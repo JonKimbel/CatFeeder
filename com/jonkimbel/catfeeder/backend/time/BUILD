@@ -7,5 +7,6 @@ java_library(
     ],
     deps = [
         "//com/jonkimbel/catfeeder/backend/proto:preferences_java_proto",
+        "//com/jonkimbel/catfeeder/backend/storage/api",
     ],
 )
