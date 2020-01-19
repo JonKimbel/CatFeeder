@@ -6,8 +6,7 @@ java_library(
         "Storage.java",
     ],
     deps = [
-        "//com/jonkimbel/catfeeder/backend/storage/api",
-        "//com/jonkimbel/catfeeder/backend/storage/parsers",
+        "//com/jonkimbel/catfeeder/backend/storage/serializer",
         "@maven//:org_xerial_sqlite_jdbc",
         "@maven//:org_checkerframework_checker_qual",
     ],

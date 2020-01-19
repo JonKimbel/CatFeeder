@@ -9,7 +9,7 @@ java_binary(
     deps = [
         "//com/jonkimbel/catfeeder/backend/server",
         "//com/jonkimbel/catfeeder/backend/server:query_parser",
-        "//com/jonkimbel/catfeeder/backend/storage",
+        "//com/jonkimbel/catfeeder/backend/storage/api",
         "//com/jonkimbel/catfeeder/backend/template",
         "//com/jonkimbel/catfeeder/backend/time",
         "//com/jonkimbel/catfeeder/backend/proto:preferences_java_proto",

@@ -1,6 +1,4 @@
-package com.jonkimbel.catfeeder.backend.storage.parsers;
-
-import com.jonkimbel.catfeeder.backend.storage.api.Serializer;
+package com.jonkimbel.catfeeder.backend.storage.serializer;
 
 import java.io.IOException;
 import java.nio.file.Files;

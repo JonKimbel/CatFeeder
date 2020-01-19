@@ -1,6 +1,4 @@
-package com.jonkimbel.catfeeder.backend.storage.api;
-
-import java.io.IOException;
+package com.jonkimbel.catfeeder.backend.storage.serializer;
 
 public interface Serializer {
   Object deserialize(String path);

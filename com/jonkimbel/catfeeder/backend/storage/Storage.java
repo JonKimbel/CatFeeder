@@ -3,8 +3,8 @@ package com.jonkimbel.catfeeder.backend.storage;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.jonkimbel.catfeeder.backend.storage.api.Serializer;
-import com.jonkimbel.catfeeder.backend.storage.parsers.PreferencesSerializer;
+import com.jonkimbel.catfeeder.backend.storage.serializer.Serializer;
+import com.jonkimbel.catfeeder.backend.storage.serializer.PreferencesSerializer;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Storage {

@@ -2,13 +2,13 @@ package com.jonkimbel.catfeeder.backend;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences.FeedingSchedule;
+import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedResponse;
 import com.jonkimbel.catfeeder.backend.server.Http;
 import com.jonkimbel.catfeeder.backend.server.HttpServer;
 import com.jonkimbel.catfeeder.backend.server.HttpServer.RequestHandler;
 import com.jonkimbel.catfeeder.backend.server.QueryParser;
 import com.jonkimbel.catfeeder.backend.server.HttpResponse;
-import com.jonkimbel.catfeeder.backend.storage.Storage;
 import com.jonkimbel.catfeeder.backend.template.TemplateFiller;
 import com.jonkimbel.catfeeder.backend.time.Time;
 import jdk.internal.jline.internal.Nullable;
@@ -25,7 +25,6 @@ public class Backend implements RequestHandler {
   private static final int PORT = 80;
   private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
 
-  private final Storage storage;
   private final int port;
 
   public static void main(String[] args) throws IOException {
@@ -35,7 +34,6 @@ public class Backend implements RequestHandler {
 
   private Backend(int port) {
     this.port = port;
-    this.storage = Storage.getStorage();
   }
 
   private void run() throws IOException {
@@ -90,16 +88,13 @@ public class Backend implements RequestHandler {
       return;
     }
 
-    Preferences preferences = (Preferences) storage.getItemBlocking(Storage.Item.PREFERENCES);
     if (feedingSchedule.equals("mornings")) {
-      storage.setItemBlocking(
-          Storage.Item.PREFERENCES,
-          preferences.toBuilder()
+      PreferencesStorage.set(
+          PreferencesStorage.get().toBuilder()
               .setFeedingSchedule(Preferences.FeedingSchedule.AUTO_FEED_IN_MORNINGS).build());
     } else if (feedingSchedule.equals("mornings_and_evenings")) {
-      storage.setItemBlocking(
-          Storage.Item.PREFERENCES,
-          preferences.toBuilder()
+      PreferencesStorage.set(
+          PreferencesStorage.get().toBuilder()
               .setFeedingSchedule(Preferences.FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS)
               .build());
     } else {
@@ -111,17 +106,17 @@ public class Backend implements RequestHandler {
     String template = new String(getClass().getResourceAsStream(templatePath).readAllBytes(),
         StandardCharsets.UTF_8);
     Map<String, String> templateValues = new HashMap<>();
-    Preferences preferences = (Preferences) storage.getItemBlocking(Storage.Item.PREFERENCES);
 
     Date dateOfLastFeeding = null;
-    if (preferences.hasLastFeedingTimeMsSinceEpoch()) {
-      dateOfLastFeeding = new Date(preferences.getLastFeedingTimeMsSinceEpoch());
+    if (PreferencesStorage.get().hasLastFeedingTimeMsSinceEpoch()) {
+      dateOfLastFeeding = new Date(PreferencesStorage.get().getLastFeedingTimeMsSinceEpoch());
       templateValues.put("last_feeding", Time.format(dateOfLastFeeding));
     } else {
       templateValues.put("last_feeding", "never");
     }
 
-    @Nullable Date nextFeedingTime = Time.calculateNextFeedingTime(preferences, dateOfLastFeeding);
+    @Nullable Date nextFeedingTime = Time.calculateNextFeedingTime(PreferencesStorage.get(),
+        dateOfLastFeeding);
     if (nextFeedingTime != null) {
       templateValues.put("next_feeding", Time.format(nextFeedingTime));
     } else {
@@ -133,9 +128,10 @@ public class Backend implements RequestHandler {
 
     // TODO: Implement support for a "never auto feed" option.
 
-    if (preferences.getFeedingSchedule() == FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
+    if (PreferencesStorage.get().getFeedingSchedule() == FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
       templateValues.put("mornings", "checked");
-    } else if (preferences.getFeedingSchedule() == FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS) {
+    } else if (PreferencesStorage.get().getFeedingSchedule() ==
+        FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS) {
       templateValues.put("mornings_and_evenings", "checked");
     }
 
