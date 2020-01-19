@@ -1,6 +1,7 @@
 directories:
   com/jonkimbel/catfeeder/backend
   api
+  photon
 
 # Automatically includes all relevant targets under the 'directories' above
 derive_targets_from_directories: false

@@ -8,9 +8,11 @@
     <content url="file://$MODULE_DIR$/../../../com/jonkimbel/catfeeder/backend">
       <sourceFolder url="file://$MODULE_DIR$/../../../com/jonkimbel/catfeeder/backend" isTestSource="false" packagePrefix="com.jonkimbel.catfeeder.backend" />
     </content>
+    <content url="file://$MODULE_DIR$/../../../photon">
+      <sourceFolder url="file://$MODULE_DIR$/../../../photon" isTestSource="false" packagePrefix="photon" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="libcat_feeder_proto-speed-hjar_21c7bcf" level="project" />
-    <orderEntry type="library" name="Bundled Protobuf Distribution" level="application" />
   </component>
 </module>
