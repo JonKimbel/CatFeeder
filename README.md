@@ -14,6 +14,8 @@ git config core.hooksPath hooks
 
 ### API (backend + frontend)
 
+#### Before you begin
+
 Download and unzip a release of
 [protoc](https://github.com/protocolbuffers/protobuf/releases) and add the
 contents of its `bin/` directory to your PATH.
@@ -22,11 +24,24 @@ Download the 0.3.9.4 release of nanopb from [here](https://jpa.kapsi.fi/nanopb/)
 and add the contents of its `generator-bin/` directory to your PATH, then run
 the following commands from this directory.
 
+While you're on their site, consider donating to the nanopb developer :)
+
+Why 0.3.9.4? Because it's currently compatible with Particle Device OS.
+[nanopb is partially available in the Device OS](https://github.com/particle-iot/device-os/issues/1502),
+so we have to fill in the gaps ourselves (see `photon/nanopb/`). If the versions
+don't match we'll have a bad time. If it wasn't for this, you could use the
+latest version of nanopb (updating `photon/nanopb/` to match).
+
+#### Compiling
+
+Note that you don't need to do this unless you're upgrading to a later version
+of nanopb or have edited cat_feeder.proto.
+
+Run the following command:
+
 ```
 protoc -I=api --nanopb_out=photon api/cat_feeder.proto
 ```
-
-While you're on their site, consider donating to the nanopb developer :)
 
 ### Server
 
