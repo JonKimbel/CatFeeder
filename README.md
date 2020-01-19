@@ -60,6 +60,8 @@ OR open the IntelliJ project and run the `backend` configuration.
 #### Compiling & flashing
 
 To compile and flash the cat feeder firmware to your device, run the following
+from the `photon/` directory. Change "CatFeeder" to whatever you named your
+device in Particle Cloud.
 
 ```
 particle compile photon --saveTo=out.bin && particle flash CatFeeder out.bin
