@@ -13,8 +13,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS.
 
-// TODO: add a big cap across the 5V line to prevent brownouts? Or get a power
-// supply.
+// TODO: add a big cap across the 5V line to prevent brownouts or get a bigger
+// power supply.
+
+// TODO [CLEANUP]: redesign the food drop funnel vertical walls, put a slow
+// slope throughout the top of the food tube so there's never a pinch.
 
 #define FAILURE_RETRY_DELAY_MS 1000
 
