@@ -55,12 +55,11 @@ OR open the IntelliJ project and run the `backend` configuration.
 1.  COMPLETELY OPTIONAL: Set up local build toolchain following
     [these steps](https://docs.particle.io/tutorials/developer-tools/cli/#compile-and-flash-code-locally)
 1.  Create a file at `photon/backend-info.h` and `#define BACKEND_DOMAIN` to the
-    domain pointing at the server you're hosting.
+    domain for your server.
 
 #### Compiling & flashing
 
 To compile and flash the cat feeder firmware to your device, run the following
-from the `photon/` directory. Change "CatFeeder" to whatever you named your device in Particle Cloud.
 
 ```
 particle compile photon --saveTo=out.bin && particle flash CatFeeder out.bin

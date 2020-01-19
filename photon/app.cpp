@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <pb_decode.h>
 #include "array-list.h"
-// TODO: figure out incompatibility here - seems the photon already has nanopb.
 #include "cat_feeder.pb.h"
 #include "http-client.h"
 
