@@ -1,5 +1,6 @@
 package com.jonkimbel.catfeeder.backend.time;
 
+import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
 import jdk.internal.jline.internal.Nullable;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
@@ -20,19 +21,33 @@ public class Time {
   // TODO [CLEANUP]: Implement support for user-defined device timezones.
   // TODO [CLEANUP]: Implement support for user-defined feeding times.
 
-  public static String format(Date date) {
+  public static String format(@Nullable Date date) {
+    if (date == null) {
+      return "never";
+    }
     return DATE_FORMAT.format(date);
   }
 
   @Nullable
-  public static Date calculateNextFeedingTime(Preferences preferences,
-      @Nullable Date dateOfLastFeeding) {
+  public static Date getLastFeedingDate() {
+    if (PreferencesStorage.get().hasLastFeedingTimeMsSinceEpoch()) {
+      return new Date(PreferencesStorage.get().getLastFeedingTimeMsSinceEpoch());
+    }
+    return null;
+  }
+
+  @Nullable
+  public static Date calculateNextFeedingTime() {
     Calendar morningTodayCalendar = timeOfDayToday(MORNING_TIME_MINUTES_INTO_DAY);
     Calendar morningTomorrowCalendar = copyADayLater(morningTodayCalendar);
     Calendar eveningTodayCalendar = timeOfDayToday(EVENING_TIME_MINUTES_INTO_DAY);
     Date now = new Date();
 
-    switch (preferences.getFeedingSchedule()) {
+    // TODO: Check last feeding date and last time settings were edited, use this to determine if a
+    // feeding time was missed (e.g. due to power outage), account for missed feedings by
+    // immediately feeding.
+
+    switch (PreferencesStorage.get().getFeedingSchedule()) {
       case AUTO_FEED_IN_MORNINGS:
         if (morningTodayCalendar.after(now)) {
           return morningTodayCalendar.getTime();

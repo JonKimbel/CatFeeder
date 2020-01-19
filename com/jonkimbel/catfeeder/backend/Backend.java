@@ -11,11 +11,11 @@ import com.jonkimbel.catfeeder.backend.server.QueryParser;
 import com.jonkimbel.catfeeder.backend.server.HttpResponse;
 import com.jonkimbel.catfeeder.backend.template.TemplateFiller;
 import com.jonkimbel.catfeeder.backend.time.Time;
-import jdk.internal.jline.internal.Nullable;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.*;
 
 // TODO [CLEANUP]: Add nullability tests.
@@ -24,6 +24,8 @@ import java.util.*;
 public class Backend implements RequestHandler {
   private static final int PORT = 80;
   private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
+  private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10 * 60 * 1000; // 10 min.
+  private static final long INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN = 60 * 1000; // 1 min.
 
   private final int port;
 
@@ -70,17 +72,33 @@ public class Backend implements RequestHandler {
           .setPrintBody(formatHtml(TEMPLATE_PATH))
           .build();
     } else if (requestPath.startsWith("/photon")) {
-      // TODO: populate this proto before returning it.
-      EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
-      response.setDelayUntilNextCheckInMs(5000);
-      response.setDelayUntilNextFeedingMs(1000);
+      PreferencesStorage.set(PreferencesStorage.get().toBuilder()
+          .setLastPhotonCheckInMsSinceEpoch(System.currentTimeMillis())
+          .build());
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setByteBody(response.build().toByteArray())
+          .setByteBody(getEmbeddedResponse())
           .build();
     }
 
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
+  }
+
+  private byte[] getEmbeddedResponse() {
+    EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
+
+    long durationUntilNextFeedingMs =
+        Time.calculateNextFeedingTime().toInstant().toEpochMilli() - Instant.now().toEpochMilli();
+    response.setDelayUntilNextFeedingMs(durationUntilNextFeeding);
+
+    long durationUntilNextCheckInMs = INTERVAL_BETWEEN_CHECK_INS_MS;
+    while (Math.abs(durationUntilNextCheckInMs - durationUntilNextFeedingMs) <
+        INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN) {
+      durationUntilNextCheckInMs += INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN;
+    }
+    response.setDelayUntilNextCheckInMs(durationUntilNextCheckInMs);
+
+    return response.build().toByteArray();
   }
 
   private void updateFeedingSchedule(String feedingSchedule) {
@@ -107,21 +125,8 @@ public class Backend implements RequestHandler {
         StandardCharsets.UTF_8);
     Map<String, String> templateValues = new HashMap<>();
 
-    Date dateOfLastFeeding = null;
-    if (PreferencesStorage.get().hasLastFeedingTimeMsSinceEpoch()) {
-      dateOfLastFeeding = new Date(PreferencesStorage.get().getLastFeedingTimeMsSinceEpoch());
-      templateValues.put("last_feeding", Time.format(dateOfLastFeeding));
-    } else {
-      templateValues.put("last_feeding", "never");
-    }
-
-    @Nullable Date nextFeedingTime = Time.calculateNextFeedingTime(PreferencesStorage.get(),
-        dateOfLastFeeding);
-    if (nextFeedingTime != null) {
-      templateValues.put("next_feeding", Time.format(nextFeedingTime));
-    } else {
-      templateValues.put("next_feeding", "never");
-    }
+    templateValues.put("last_feeding", Time.format(Time.getLastFeedingDate()));
+    templateValues.put("next_feeding", Time.format(Time.calculateNextFeedingTime()));
 
     // TODO [CLEANUP]: Use preferences.lastPhotonCheckInMsSinceEpoch() to warn the viewer if the
     // embedded device hasn't communicated with the server in a while.
