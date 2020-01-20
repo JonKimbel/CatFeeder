@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 // TODO [CLEANUP]: Add nullability tests.
@@ -90,7 +91,7 @@ public class Backend implements RequestHandler {
   private byte[] getProtobufResponse() {
     EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
 
-    @Nullable Date nextFeedingTime = Time.calculateNextFeedingTime();
+    @Nullable ZonedDateTime nextFeedingTime = Time.getTimeOfNextFeeding();
     if (nextFeedingTime == null) {
       response.setDelayUntilNextCheckInMs(INTERVAL_BETWEEN_CHECK_INS_MS);
     } else {
@@ -118,15 +119,16 @@ public class Backend implements RequestHandler {
         StandardCharsets.UTF_8);
     Map<String, String> templateValues = new HashMap<>();
 
-    templateValues.put("last_feeding", Time.format(Time.getLastFeedingDate()));
-    templateValues.put("next_feeding", Time.format(Time.calculateNextFeedingTime()));
+    templateValues.put("last_feeding", Time.format(Time.getTimeOfLastFeeding()));
+    templateValues.put("next_feeding", Time.format(Time.getTimeOfNextFeeding()));
     int scoopsPerFeeding = Math.max(
         PreferencesStorage.get().getFeedingPreferences().getNumberOfScoopsPerFeeding(),
         MIN_SCOOPS_PER_FEEDING);
     templateValues.put("number_of_scoops_per_feeding", String.valueOf(scoopsPerFeeding));
 
-    // TODO: Use preferences.lastPhotonCheckInMsSinceEpoch() to warn the viewer if the embedded
-    // device hasn't communicated with the server in a while.
+    templateValues.put("check_in_warning_display",
+        Time.wasLastCheckInRecent() ? "none" : "inherit");
+    templateValues.put("check_in_warning_time", Time.format(Time.getTimeOfLastCheckIn()));
 
     if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
         FeedingSchedule.AUTO_FEED_IN_MORNINGS) {

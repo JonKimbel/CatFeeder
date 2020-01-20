@@ -2,78 +2,92 @@ package com.jonkimbel.catfeeder.backend.time;
 
 import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
 
-import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
-import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences.FeedingSchedule;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 
 public class Time {
-  private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a (z)");
-  private static final TimeZone DEVICE_TIME_ZONE = TimeZone.getTimeZone("US/Pacific");
+  private static final DateTimeFormatter TIME_FORMATTER =
+      DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
+  private static final ZoneId DEVICE_TIME_ZONE = ZoneId.of("US/Pacific");
   private static final int MORNING_TIME_MINUTES_INTO_DAY = 6 * 60; // 6AM.
   private static final int EVENING_TIME_MINUTES_INTO_DAY = 18 * 60; // 6PM.
 
   // TODO [CLEANUP]: Implement support for user-defined device timezones.
   // TODO [CLEANUP]: Implement support for user-defined feeding times.
 
-  public static String format(@Nullable Date date) {
-    if (date == null) {
+  public static String format(@Nullable ZonedDateTime time) {
+    if (time == null) {
       return "never";
     }
-    return DATE_FORMAT.format(date);
+    return TIME_FORMATTER.format(time);
+  }
+
+  public static boolean wasLastCheckInRecent() {
+    @Nullable ZonedDateTime lastCheckInDate = getTimeOfLastCheckIn();
+    if (lastCheckInDate == null) {
+      return false;
+    }
+
+    ZonedDateTime fifteenMinutesAgo = ZonedDateTime.now(DEVICE_TIME_ZONE).minusMinutes(15);
+    return lastCheckInDate.isAfter(fifteenMinutesAgo);
   }
 
   @Nullable
-  public static Date getLastFeedingDate() {
-    if (PreferencesStorage.get().getFeedingPreferences().hasLastFeedingTimeMsSinceEpoch()) {
-      return new Date(PreferencesStorage.get().getFeedingPreferences().getLastFeedingTimeMsSinceEpoch());
+  public static ZonedDateTime getTimeOfLastCheckIn() {
+    if (PreferencesStorage.get().hasLastPhotonCheckInMsSinceEpoch()) {
+      return ZonedDateTime.ofInstant(
+          Instant.ofEpochMilli(PreferencesStorage.get().getLastPhotonCheckInMsSinceEpoch()),
+          DEVICE_TIME_ZONE);
     }
     return null;
   }
 
   @Nullable
-  public static Date calculateNextFeedingTime() {
-    Calendar morningTodayCalendar = timeOfDayToday(MORNING_TIME_MINUTES_INTO_DAY);
-    Calendar morningTomorrowCalendar = copyADayLater(morningTodayCalendar);
-    Calendar eveningTodayCalendar = timeOfDayToday(EVENING_TIME_MINUTES_INTO_DAY);
-    Calendar now = Calendar.getInstance(DEVICE_TIME_ZONE);
+  public static ZonedDateTime getTimeOfLastFeeding() {
+    if (PreferencesStorage.get().getFeedingPreferences().hasLastFeedingTimeMsSinceEpoch()) {
+      return ZonedDateTime.ofInstant(
+          Instant.ofEpochMilli(
+              PreferencesStorage.get().getFeedingPreferences().getLastFeedingTimeMsSinceEpoch()),
+          DEVICE_TIME_ZONE);
+    }
+    return null;
+  }
+
+  @Nullable
+  public static ZonedDateTime getTimeOfNextFeeding() {
+    ZonedDateTime now = ZonedDateTime.now(DEVICE_TIME_ZONE);
+    ZonedDateTime morningToday = getTimeAtMinutesIntoToday(MORNING_TIME_MINUTES_INTO_DAY);
+    ZonedDateTime eveningToday = getTimeAtMinutesIntoToday(EVENING_TIME_MINUTES_INTO_DAY);
+    ZonedDateTime morningTomorrow = morningToday.plusDays(1);
 
     switch (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule()) {
       case AUTO_FEED_IN_MORNINGS:
-        if (morningTodayCalendar.after(now)) {
-          return morningTodayCalendar.getTime();
+        if (morningToday.isAfter(now)) {
+          return morningToday;
         } else {
-          return morningTomorrowCalendar.getTime();
+          return morningTomorrow;
         }
       case AUTO_FEED_IN_MORNINGS_AND_EVENINGS:
-        if (morningTodayCalendar.after(now)) {
-          return morningTodayCalendar.getTime();
-        } else if (eveningTodayCalendar.after(now)) {
-          return eveningTodayCalendar.getTime();
+        if (morningToday.isAfter(now)) {
+          return morningToday;
+        } else if (eveningToday.isAfter(now)) {
+          return eveningToday;
         }
-        return morningTomorrowCalendar.getTime();
+        return morningTomorrow;
       default:
         return null;
     }
   }
 
-  private static Calendar timeOfDayToday(int minutes_into_day) {
-    Calendar calendar = Calendar.getInstance(DEVICE_TIME_ZONE);
-    calendar.set(Calendar.HOUR_OF_DAY, 0);
-    calendar.set(Calendar.MINUTE, minutes_into_day);
-    calendar.set(Calendar.SECOND, 0);
-    calendar.set(Calendar.MILLISECOND, 0);
-    return calendar;
-  }
-
-  private static Calendar copyADayLater(Calendar calendar) {
-    Calendar copy = (Calendar) calendar.clone();
-    copy.add(Calendar.DAY_OF_YEAR, 1);
-    return copy;
+  private static ZonedDateTime getTimeAtMinutesIntoToday(int minutes_into_day) {
+    return ZonedDateTime.now(DEVICE_TIME_ZONE)
+        .withHour(0).withMinute(0).withSecond(0).withNano(0)
+        .plusMinutes(minutes_into_day);
   }
 }
