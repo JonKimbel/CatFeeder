@@ -13,7 +13,7 @@ message Preferences {
 message FeedingPreferences {
   enum FeedingSchedule {
     UNKNOWN_FEEDING_SCHEDULE = 0;
-    NO_FEEDING_SCHEDULE = 1;
+    NEVER_AUTO_FEED = 1;
     AUTO_FEED_IN_MORNINGS = 2;
     AUTO_FEED_IN_MORNINGS_AND_EVENINGS = 3;
   }

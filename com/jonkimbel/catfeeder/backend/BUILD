@@ -14,6 +14,7 @@ java_binary(
         "//com/jonkimbel/catfeeder/backend/time",
         "//com/jonkimbel/catfeeder/backend/proto:preferences_java_proto",
         "//api:cat_feeder_java_proto",
+        "@maven//:org_checkerframework_checker_qual",
     ],
     resources = [
         "template.html",

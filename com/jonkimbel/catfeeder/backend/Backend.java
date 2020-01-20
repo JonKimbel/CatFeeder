@@ -12,6 +12,7 @@ import com.jonkimbel.catfeeder.backend.server.QueryParser;
 import com.jonkimbel.catfeeder.backend.server.HttpResponse;
 import com.jonkimbel.catfeeder.backend.template.TemplateFiller;
 import com.jonkimbel.catfeeder.backend.time.Time;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -89,16 +90,21 @@ public class Backend implements RequestHandler {
   private byte[] getProtobufResponse() {
     EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
 
-    long durationUntilNextFeedingMs =
-        Time.calculateNextFeedingTime().toInstant().toEpochMilli() - Instant.now().toEpochMilli();
-    response.setDelayUntilNextFeedingMs(durationUntilNextFeedingMs);
+    @Nullable Date nextFeedingTime = Time.calculateNextFeedingTime();
+    if (nextFeedingTime == null) {
+      response.setDelayUntilNextCheckInMs(INTERVAL_BETWEEN_CHECK_INS_MS);
+    } else {
+      long durationUntilNextFeedingMs =
+          nextFeedingTime.toInstant().toEpochMilli() - Instant.now().toEpochMilli();
+      response.setDelayUntilNextFeedingMs(durationUntilNextFeedingMs);
 
-    long durationUntilNextCheckInMs = INTERVAL_BETWEEN_CHECK_INS_MS;
-    while (Math.abs(durationUntilNextCheckInMs - durationUntilNextFeedingMs) <
-        INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN) {
-      durationUntilNextCheckInMs += INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN;
+      long durationUntilNextCheckInMs = INTERVAL_BETWEEN_CHECK_INS_MS;
+      while (Math.abs(durationUntilNextCheckInMs - durationUntilNextFeedingMs) <
+          INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN) {
+        durationUntilNextCheckInMs += INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN;
+      }
+      response.setDelayUntilNextCheckInMs(durationUntilNextCheckInMs);
     }
-    response.setDelayUntilNextCheckInMs(durationUntilNextCheckInMs);
 
     response.setScoopsToFeed(Math.max(
         PreferencesStorage.get().getFeedingPreferences().getNumberOfScoopsPerFeeding(),
@@ -122,14 +128,14 @@ public class Backend implements RequestHandler {
     // TODO [CLEANUP]: Use preferences.lastPhotonCheckInMsSinceEpoch() to warn the viewer if the
     // embedded device hasn't communicated with the server in a while.
 
-    // TODO: Implement UI for a "never auto feed" option.
-
     if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
         FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
-      templateValues.put("mornings", "checked");
+      templateValues.put("feed_schedule_mornings", "checked");
     } else if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
         FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS) {
-      templateValues.put("mornings_and_evenings", "checked");
+      templateValues.put("feed_schedule_mornings_and_evenings", "checked");
+    } else {
+      templateValues.put("feed_schedule_never", "checked");
     }
 
     return new TemplateFiller(template).fill(templateValues);
@@ -177,6 +183,10 @@ public class Backend implements RequestHandler {
     } else if (feedingSchedule.equals("mornings_and_evenings")) {
       builder
           .setFeedingSchedule(FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS)
+          .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
+    } else if (feedingSchedule.equals("never")) {
+      builder
+          .setFeedingSchedule(FeedingSchedule.NEVER_AUTO_FEED)
           .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
     } else {
       System.err.printf("%s - Unrecognized feeding schedule:%s\n", new Date(), feedingSchedule);
