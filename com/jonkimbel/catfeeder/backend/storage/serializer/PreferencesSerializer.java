@@ -3,6 +3,7 @@ package com.jonkimbel.catfeeder.backend.storage.serializer;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Date;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
 
@@ -14,7 +15,7 @@ public class PreferencesSerializer implements Serializer {
     try {
       prefsFromFile = Preferences.parseFrom(Files.readAllBytes(Paths.get(path)));
     } catch (IOException e) {
-      // TODO [CLEANUP]: Log error.
+      System.err.printf("%s - Could not read Preferences file:%s\n", new Date(), e);
     }
 
     if (prefsFromFile != null) {
@@ -32,9 +33,9 @@ public class PreferencesSerializer implements Serializer {
     Preferences prefs = (Preferences) value;
 
     try {
-    Files.write(Paths.get(path), prefs.toByteArray());
+      Files.write(Paths.get(path), prefs.toByteArray());
     } catch (IOException e) {
-      // TODO [CLEANUP]: Log error.
+      System.err.printf("%s - Could not write Preferences file:%s\n", new Date(), e);
     }
   }
 }

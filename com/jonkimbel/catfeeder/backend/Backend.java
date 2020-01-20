@@ -65,8 +65,8 @@ public class Backend implements RequestHandler {
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
           .build();
     } else if (requestPath.startsWith("/write?")) {
-      // TODO: switch from GET to POST for this, it results in weird re-sending issues when you
-      // refresh the page.
+      // TODO [CLEANUP]: switch from GET to POST for this, it results in weird re-sending behavior
+      // when you refresh the page.
       Map<String, String> queryKeysAndValues = QueryParser.parseQuery(requestPath);
       updateFeedingPreferences(queryKeysAndValues);
 
@@ -125,8 +125,8 @@ public class Backend implements RequestHandler {
         MIN_SCOOPS_PER_FEEDING);
     templateValues.put("number_of_scoops_per_feeding", String.valueOf(scoopsPerFeeding));
 
-    // TODO [CLEANUP]: Use preferences.lastPhotonCheckInMsSinceEpoch() to warn the viewer if the
-    // embedded device hasn't communicated with the server in a while.
+    // TODO: Use preferences.lastPhotonCheckInMsSinceEpoch() to warn the viewer if the embedded
+    // device hasn't communicated with the server in a while.
 
     if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
         FeedingSchedule.AUTO_FEED_IN_MORNINGS) {

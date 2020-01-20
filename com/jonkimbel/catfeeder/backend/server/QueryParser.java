@@ -1,5 +1,6 @@
 package com.jonkimbel.catfeeder.backend.server;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class QueryParser {
     for (String keyValuePair : query.split("&")) {
       String[] keyAndValue = keyValuePair.split("=");
       if (keyAndValue.length != 2) {
-        // TODO [CLEANUP]: log error here.
+        System.err.printf("%s - unparsed query string argument:%s\n", new Date(), keyValuePair);
         continue;
       }
       keyValueMap.put(keyAndValue[0], keyAndValue[1]);
