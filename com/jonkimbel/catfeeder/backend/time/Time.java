@@ -43,10 +43,6 @@ public class Time {
     Calendar eveningTodayCalendar = timeOfDayToday(EVENING_TIME_MINUTES_INTO_DAY);
     Date now = new Date();
 
-    // TODO: Check last feeding date and last time settings were edited, use this to determine if a
-    // feeding time was missed (e.g. due to power outage), account for missed feedings by
-    // immediately feeding.
-
     switch (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule()) {
       case AUTO_FEED_IN_MORNINGS:
         if (morningTodayCalendar.after(now)) {

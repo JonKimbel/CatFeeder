@@ -26,7 +26,9 @@
 // TODO [CLEANUP]: Account for fetch timeout and reduce this value.
 #define FAILURE_RETRY_DELAY_MS 60000
 
-#define FOOD_DISPENSE_RETRACT_DELAY_MS 1500
+#define SERVO_MOVE_DELAY_MS 1500
+
+#define MINIMUM_SCOOPS_TO_FEED 1
 
 ////////////////////////////////////////////////////////////////////////////////
 // METHOD DECLARATIONS.
@@ -47,13 +49,18 @@ ArrayList<uint8_t> responseBuffer;
 
 // How long to wait until doing the next feeding.
 // When this is decremented to 0, feed_now should be set.
-uint64_t delay_before_next_feeding_ms = 0;
-bool feed_now = false;
+uint64_t delay_before_next_feeding_ms;
+bool feed_now;
 
 // How long to wait until doing the next server check in.
 // When this is decremented to 0, check_in_now should be set.
-uint64_t delay_before_next_check_in_ms = 0;
+uint64_t delay_before_next_check_in_ms;
 bool check_in_now = true; // Immediately check in after a restart.
+
+// How many scoops to serve per feeding. Setting this less than
+// MINIMUM_SCOOPS_TO_FEED will result in MINIMUM_SCOOPS_TO_FEED scoops being
+// fed.
+uint32_t scoops_to_feed;
 
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN CODE.
@@ -80,10 +87,12 @@ void loop() {
 
 void feed() {
   // Dispense food.
-  // TODO: handle multiple scoops of food.
-  analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
-  delayAndUpdateVariables(FOOD_DISPENSE_RETRACT_DELAY_MS);
-  analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+  for (uint32_t i = 0; i < min(scoops_to_feed, MINIMUM_SCOOPS_TO_FEED); i++) {
+    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+    delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
+    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+    delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
+  }
 }
 
 void check_in() {
@@ -98,6 +107,7 @@ void check_in() {
     return;
   }
 
+  // TODO: send up EmbeddedResponse.
   responseBuffer.clear();
   httpClient.sendRequest();
   Status status = httpClient.getResponse(&responseBuffer);
@@ -129,6 +139,7 @@ void check_in() {
 
   // Fetch & decode were both successful.
 
+  scoops_to_feed = response.scoops_to_feed;
   delay_before_next_check_in_ms = response.delay_until_next_check_in_ms;
   if (response.has_delay_until_next_feeding_ms) {
     delay_before_next_feeding_ms = response.delay_until_next_feeding_ms;

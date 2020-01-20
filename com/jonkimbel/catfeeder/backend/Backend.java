@@ -140,7 +140,8 @@ public class Backend implements RequestHandler {
     // TODO [CLEANUP]: Use preferences.lastPhotonCheckInMsSinceEpoch() to warn the viewer if the
     // embedded device hasn't communicated with the server in a while.
 
-    // TODO: Implement support for a "never auto feed" option.
+    // TODO: Implement UI for a "never auto feed" option.
+    // TODO: Implement UI for "number of scoops" option.
 
     if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
         FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
