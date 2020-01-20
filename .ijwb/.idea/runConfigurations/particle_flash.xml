@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="particle-flash" type="ShConfigurationType">
+    <option name="SCRIPT_PATH" value="$USER_HOME$/AppData/Local/particle/bin/particle.exe" />
+    <option name="SCRIPT_OPTIONS" value="flash CatFeeder out.bin" />
+    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$/../photon" />
+    <option name="INTERPRETER_PATH" value="" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <method v="2" />
+  </configuration>
+</component>
