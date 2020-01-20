@@ -41,7 +41,7 @@ public class Time {
     Calendar morningTodayCalendar = timeOfDayToday(MORNING_TIME_MINUTES_INTO_DAY);
     Calendar morningTomorrowCalendar = copyADayLater(morningTodayCalendar);
     Calendar eveningTodayCalendar = timeOfDayToday(EVENING_TIME_MINUTES_INTO_DAY);
-    Date now = new Date();
+    Calendar now = Calendar.getInstance(DEVICE_TIME_ZONE);
 
     switch (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule()) {
       case AUTO_FEED_IN_MORNINGS:
