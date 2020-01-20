@@ -87,7 +87,7 @@ void loop() {
 
 void feed() {
   // Dispense food.
-  for (uint32_t i = 0; i < min(scoops_to_feed, MINIMUM_SCOOPS_TO_FEED); i++) {
+  for (uint32_t i = 0; i < max(scoops_to_feed, MINIMUM_SCOOPS_TO_FEED); i++) {
     analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
     delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
     analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
