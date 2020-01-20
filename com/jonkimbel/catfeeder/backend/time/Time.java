@@ -1,10 +1,10 @@
 package com.jonkimbel.catfeeder.backend.time;
 
 import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
-import jdk.internal.jline.internal.Nullable;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences.FeedingSchedule;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -15,8 +15,8 @@ import java.util.TimeZone;
 public class Time {
   private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a (z)");
   private static final TimeZone DEVICE_TIME_ZONE = TimeZone.getTimeZone("US/Pacific");
-  private static final int MORNING_TIME_MINUTES_INTO_DAY = 6*60; // 6AM.
-  private static final int EVENING_TIME_MINUTES_INTO_DAY = 18*60; // 6PM.
+  private static final int MORNING_TIME_MINUTES_INTO_DAY = 6 * 60; // 6AM.
+  private static final int EVENING_TIME_MINUTES_INTO_DAY = 18 * 60; // 6PM.
 
   // TODO [CLEANUP]: Implement support for user-defined device timezones.
   // TODO [CLEANUP]: Implement support for user-defined feeding times.

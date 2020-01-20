@@ -56,16 +56,16 @@ public class HttpServer {
     HttpResponse httpResponse = requestHandler.handleRequest(method, requestPath);
     System.out.printf("%s - response: %s\n", new Date(), httpResponse.getResponseCode());
 
-    if (httpResponse.isBodyPrint()) {
+    if (httpResponse.isBodyHtml()) {
       writeHeader(printOut, httpResponse.getResponseCode(), Http.ContentType.HTML,
-          /* contentLength = */ httpResponse.getPrintBody().length());
-      printOut.print(httpResponse.getPrintBody());
+          /* contentLength = */ httpResponse.getHtmlBody().length());
+      printOut.print(httpResponse.getHtmlBody());
       printOut.flush();
     } else {
       writeHeader(printOut, httpResponse.getResponseCode(), Http.ContentType.PROTOCOL_BUFFER,
-          /* contentLength = */ httpResponse.getByteBody().length);
-      bytesOut.write(httpResponse.getByteBody(), /* offset = */ 0,
-          /* length = */ httpResponse.getByteBody().length);
+          /* contentLength = */ httpResponse.getProtobufBody().length);
+      bytesOut.write(httpResponse.getProtobufBody(), /* offset = */ 0,
+          /* length = */ httpResponse.getProtobufBody().length);
       bytesOut.flush();
     }
   }

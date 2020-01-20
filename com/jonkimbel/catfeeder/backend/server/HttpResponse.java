@@ -3,20 +3,20 @@ package com.jonkimbel.catfeeder.backend.server;
 // TODO [CLEANUP]: Make @AutoValue.
 
 public class HttpResponse {
-  private final byte[] byteBody;
-  private final String printBody;
+  private final byte[] protobufBody;
+  private final String htmlBody;
   private final Http.ResponseCode responseCode;
 
-  public boolean isBodyPrint() {
-    return printBody.length() > byteBody.length;
+  public boolean isBodyHtml() {
+    return htmlBody.length() > protobufBody.length;
   }
 
-  public String getPrintBody() {
-    return printBody;
+  public String getHtmlBody() {
+    return htmlBody;
   }
 
-  public byte[] getByteBody() {
-    return byteBody;
+  public byte[] getProtobufBody() {
+    return protobufBody;
   }
 
   public Http.ResponseCode getResponseCode() {
@@ -27,26 +27,26 @@ public class HttpResponse {
     return new Builder();
   }
 
-  private HttpResponse(String printBody, byte[] byteBody, Http.ResponseCode responseCode) {
-    this.printBody = printBody;
-    this.byteBody = byteBody;
+  private HttpResponse(String htmlBody, byte[] protobufBody, Http.ResponseCode responseCode) {
+    this.htmlBody = htmlBody;
+    this.protobufBody = protobufBody;
     this.responseCode = responseCode;
   }
 
   public static class Builder {
-    private String printBody = "";
-    private byte[] byteBody = new byte[0];
+    private String htmlBody = "";
+    private byte[] protobufBody = new byte[0];
     private Http.ResponseCode responseCode = Http.ResponseCode.NOT_IMPLEMENTED;
 
-    public Builder setPrintBody(String printBody) {
-      this.printBody = printBody;
-      this.byteBody = new byte[0];
+    public Builder setHtmlBody(String htmlBody) {
+      this.htmlBody = htmlBody;
+      this.protobufBody = new byte[0];
       return this;
     }
 
-    public Builder setByteBody(byte[] byteBody) {
-      this.byteBody = byteBody;
-      this.printBody = "";
+    public Builder setProtobufBody(byte[] protobufBody) {
+      this.protobufBody = protobufBody;
+      this.htmlBody = "";
       return this;
     }
 
@@ -56,7 +56,7 @@ public class HttpResponse {
     }
 
     public HttpResponse build() {
-      return new HttpResponse(printBody, byteBody, responseCode);
+      return new HttpResponse(htmlBody, protobufBody, responseCode);
     }
 
     private Builder() {}

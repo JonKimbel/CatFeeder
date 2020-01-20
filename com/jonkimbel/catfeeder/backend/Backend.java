@@ -1,6 +1,7 @@
 package com.jonkimbel.catfeeder.backend;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
+import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences;
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences.FeedingSchedule;
 import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedResponse;
@@ -26,6 +27,7 @@ public class Backend implements RequestHandler {
   private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
   private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10 * 60 * 1000; // 10 min.
   private static final long INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN = 60 * 1000; // 1 min.
+  private static final int MIN_SCOOPS_PER_FEEDING = 1;
 
   private final int port;
 
@@ -59,17 +61,17 @@ public class Backend implements RequestHandler {
     if (requestPath.equals("/")) {
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setPrintBody(formatHtml(TEMPLATE_PATH))
+          .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
           .build();
     } else if (requestPath.startsWith("/write?")) {
-      // TODO [CLEANUP]: switch from GET to POST for this, it results in weird
-      // re-sending issues when you refresh the page.
+      // TODO: switch from GET to POST for this, it results in weird re-sending issues when you
+      // refresh the page.
       Map<String, String> queryKeysAndValues = QueryParser.parseQuery(requestPath);
-      updateFeedingSchedule(queryKeysAndValues.get("feed_schedule"));
+      updateFeedingPreferences(queryKeysAndValues);
 
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setPrintBody(formatHtml(TEMPLATE_PATH))
+          .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
           .build();
     } else if (requestPath.startsWith("/photon")) {
       PreferencesStorage.set(PreferencesStorage.get().toBuilder()
@@ -77,14 +79,14 @@ public class Backend implements RequestHandler {
           .build());
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setByteBody(getEmbeddedResponse())
+          .setProtobufBody(getProtobufResponse())
           .build();
     }
 
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
 
-  private byte[] getEmbeddedResponse() {
+  private byte[] getProtobufResponse() {
     EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
 
     long durationUntilNextFeedingMs =
@@ -98,50 +100,29 @@ public class Backend implements RequestHandler {
     }
     response.setDelayUntilNextCheckInMs(durationUntilNextCheckInMs);
 
+    response.setScoopsToFeed(Math.max(
+        PreferencesStorage.get().getFeedingPreferences().getNumberOfScoopsPerFeeding(),
+        MIN_SCOOPS_PER_FEEDING));
+
     return response.build().toByteArray();
   }
 
-  private void updateFeedingSchedule(String feedingSchedule) {
-    if (feedingSchedule == null) {
-      return;
-    }
-
-    if (feedingSchedule.equals("mornings")) {
-      Preferences.Builder builder = PreferencesStorage.get().toBuilder();
-      PreferencesStorage.set(
-          builder
-              .setFeedingPreferences(
-                  builder.getFeedingPreferencesBuilder()
-                      .setFeedingSchedule(FeedingSchedule.AUTO_FEED_IN_MORNINGS)
-                      .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli()))
-              .build());
-    } else if (feedingSchedule.equals("mornings_and_evenings")) {
-      Preferences.Builder builder = PreferencesStorage.get().toBuilder();
-      PreferencesStorage.set(
-          builder
-              .setFeedingPreferences(
-                  builder.getFeedingPreferencesBuilder()
-                      .setFeedingSchedule(FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS)
-                      .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli()))
-              .build());
-    } else {
-      System.err.printf("%s - Unrecognized feeding schedule:%s\n", new Date(), feedingSchedule);
-    }
-  }
-
-  private String formatHtml(String templatePath) throws IOException {
+  private String getHtmlResponse(String templatePath) throws IOException {
     String template = new String(getClass().getResourceAsStream(templatePath).readAllBytes(),
         StandardCharsets.UTF_8);
     Map<String, String> templateValues = new HashMap<>();
 
     templateValues.put("last_feeding", Time.format(Time.getLastFeedingDate()));
     templateValues.put("next_feeding", Time.format(Time.calculateNextFeedingTime()));
+    int scoopsPerFeeding = Math.max(
+        PreferencesStorage.get().getFeedingPreferences().getNumberOfScoopsPerFeeding(),
+        MIN_SCOOPS_PER_FEEDING);
+    templateValues.put("number_of_scoops_per_feeding", String.valueOf(scoopsPerFeeding));
 
     // TODO [CLEANUP]: Use preferences.lastPhotonCheckInMsSinceEpoch() to warn the viewer if the
     // embedded device hasn't communicated with the server in a while.
 
     // TODO: Implement UI for a "never auto feed" option.
-    // TODO: Implement UI for "number of scoops" option.
 
     if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
         FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
@@ -152,5 +133,53 @@ public class Backend implements RequestHandler {
     }
 
     return new TemplateFiller(template).fill(templateValues);
+  }
+
+  private void updateFeedingPreferences(Map<String, String> queryKeysAndValues) {
+    Preferences.Builder builder = PreferencesStorage.get().toBuilder();
+
+    updateFeedingSchedule(queryKeysAndValues.get("feed_schedule"),
+        builder.getFeedingPreferencesBuilder());
+    updateScoopsPerFeeding(queryKeysAndValues.get("number_of_scoops_per_feeding"),
+        builder.getFeedingPreferencesBuilder());
+
+    PreferencesStorage.set(builder.build());
+  }
+
+  private static void updateScoopsPerFeeding(String scoopsPerFeeding,
+      FeedingPreferences.Builder builder) {
+    Integer numberOfScoopsPerFeeding;
+    try {
+      numberOfScoopsPerFeeding = Integer.parseInt(scoopsPerFeeding);
+    } catch (NumberFormatException e) {
+      numberOfScoopsPerFeeding = null;
+    }
+
+    if (numberOfScoopsPerFeeding == null || numberOfScoopsPerFeeding < MIN_SCOOPS_PER_FEEDING) {
+      return;
+    }
+
+    builder
+        .setNumberOfScoopsPerFeeding(numberOfScoopsPerFeeding)
+        .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
+  }
+
+  private static void updateFeedingSchedule(String feedingSchedule,
+      FeedingPreferences.Builder builder) {
+    if (feedingSchedule == null) {
+      return;
+    }
+
+    if (feedingSchedule.equals("mornings")) {
+      builder
+          .setFeedingSchedule(FeedingSchedule.AUTO_FEED_IN_MORNINGS)
+          .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
+    } else if (feedingSchedule.equals("mornings_and_evenings")) {
+      builder
+          .setFeedingSchedule(FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS)
+          .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
+    } else {
+      System.err.printf("%s - Unrecognized feeding schedule:%s\n", new Date(), feedingSchedule);
+    }
   }
 }

@@ -20,6 +20,8 @@ message FeedingPreferences {
 
   optional FeedingSchedule feeding_schedule = 1;
 
+  optional int32 number_of_scoops_per_feeding = 4;
+
   optional uint64 last_feeding_time_ms_since_epoch = 2;
 
   optional uint64 last_feeding_schedule_change_ms_since_epoch = 3;
