@@ -4,7 +4,7 @@ import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
 import jdk.internal.jline.internal.Nullable;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
-import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences.FeedingSchedule;
+import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences.FeedingSchedule;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -30,8 +30,8 @@ public class Time {
 
   @Nullable
   public static Date getLastFeedingDate() {
-    if (PreferencesStorage.get().hasLastFeedingTimeMsSinceEpoch()) {
-      return new Date(PreferencesStorage.get().getLastFeedingTimeMsSinceEpoch());
+    if (PreferencesStorage.get().getFeedingPreferences().hasLastFeedingTimeMsSinceEpoch()) {
+      return new Date(PreferencesStorage.get().getFeedingPreferences().getLastFeedingTimeMsSinceEpoch());
     }
     return null;
   }
@@ -47,7 +47,7 @@ public class Time {
     // feeding time was missed (e.g. due to power outage), account for missed feedings by
     // immediately feeding.
 
-    switch (PreferencesStorage.get().getFeedingSchedule()) {
+    switch (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule()) {
       case AUTO_FEED_IN_MORNINGS:
         if (morningTodayCalendar.after(now)) {
           return morningTodayCalendar.getTime();

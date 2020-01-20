@@ -5,6 +5,12 @@ package catfeeder.proto;
 option java_package = "com.jonkimbel.catfeeder.backend.proto";
 
 message Preferences {
+    optional FeedingPreferences feeding_preferences = 1;
+
+    optional uint64 last_photon_check_in_ms_since_epoch = 2;
+}
+
+message FeedingPreferences {
     enum FeedingSchedule {
         UNKNOWN_FEEDING_SCHEDULE = 0;
         NO_FEEDING_SCHEDULE = 1;
@@ -16,5 +22,5 @@ message Preferences {
 
     optional uint64 last_feeding_time_ms_since_epoch = 2;
 
-    optional uint64 last_photon_check_in_ms_since_epoch = 3;
+    optional uint64 last_feeding_schedule_change_ms_since_epoch = 3;
 }

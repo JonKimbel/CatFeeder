@@ -1,7 +1,7 @@
 package com.jonkimbel.catfeeder.backend;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
-import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences.FeedingSchedule;
+import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences.FeedingSchedule;
 import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedResponse;
 import com.jonkimbel.catfeeder.backend.server.Http;
@@ -107,13 +107,22 @@ public class Backend implements RequestHandler {
     }
 
     if (feedingSchedule.equals("mornings")) {
+      Preferences.Builder builder = PreferencesStorage.get().toBuilder();
       PreferencesStorage.set(
-          PreferencesStorage.get().toBuilder()
-              .setFeedingSchedule(Preferences.FeedingSchedule.AUTO_FEED_IN_MORNINGS).build());
+          builder
+              .setFeedingPreferences(
+                  builder.getFeedingPreferencesBuilder()
+                      .setFeedingSchedule(FeedingSchedule.AUTO_FEED_IN_MORNINGS)
+                      .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli()))
+              .build());
     } else if (feedingSchedule.equals("mornings_and_evenings")) {
+      Preferences.Builder builder = PreferencesStorage.get().toBuilder();
       PreferencesStorage.set(
-          PreferencesStorage.get().toBuilder()
-              .setFeedingSchedule(Preferences.FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS)
+          builder
+              .setFeedingPreferences(
+                  builder.getFeedingPreferencesBuilder()
+                      .setFeedingSchedule(FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS)
+                      .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli()))
               .build());
     } else {
       System.err.printf("%s - Unrecognized feeding schedule:%s\n", new Date(), feedingSchedule);
@@ -133,9 +142,10 @@ public class Backend implements RequestHandler {
 
     // TODO: Implement support for a "never auto feed" option.
 
-    if (PreferencesStorage.get().getFeedingSchedule() == FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
+    if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
+        FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
       templateValues.put("mornings", "checked");
-    } else if (PreferencesStorage.get().getFeedingSchedule() ==
+    } else if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
         FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS) {
       templateValues.put("mornings_and_evenings", "checked");
     }
