@@ -19,9 +19,21 @@
 // TODO [CLEANUP]: redesign the food drop funnel vertical walls, put a slow
 // slope throughout the top of the food tube so there's never a pinch.
 
-#define FAILURE_RETRY_DELAY_MS 1000
+// How long to wait after a failed fetch before retrying. This must be
+// significantly longer than it takes for a failed fetch to occur because we
+// don't increment our "to_delay" variables to account for the fetch timeout.
+// Keeping this value high keeps the error there low.
+// TODO [CLEANUP]: Account for fetch timeout and reduce this value.
+#define FAILURE_RETRY_DELAY_MS 60000
 
-#define FOOD_DISPENSE_WAIT_TIME 1500
+#define FOOD_DISPENSE_RETRACT_DELAY_MS 1500
+
+////////////////////////////////////////////////////////////////////////////////
+// METHOD DECLARATIONS.
+
+void feed();
+void check_in();
+void delayAndUpdateVariables(uint64_t delay_time_ms);
 
 ////////////////////////////////////////////////////////////////////////////////
 // VARIABLES.
@@ -32,6 +44,16 @@ HttpClient httpClient(BACKEND_DOMAIN, "/photon", 80);
 
 // Buffer used to hold raw data from the server.
 ArrayList<uint8_t> responseBuffer;
+
+// How long to wait until doing the next feeding.
+// When this is decremented to 0, feed_now should be set.
+uint64_t delay_before_next_feeding_ms = 0;
+bool feed_now = false;
+
+// How long to wait until doing the next server check in.
+// When this is decremented to 0, check_in_now should be set.
+uint64_t delay_before_next_check_in_ms = 0;
+bool check_in_now = true; // Immediately check in after a restart.
 
 ////////////////////////////////////////////////////////////////////////////////
 // MAIN CODE.
@@ -44,6 +66,27 @@ void setup() {
 }
 
 void loop() {
+  if (feed_now) {
+    feed();
+    feed_now = false;
+  } else if (check_in_now) {
+    check_in();
+    check_in_now = false;
+  } else {
+    // If we're not feeding or checking in, we're waiting.
+    delayAndUpdateVariables(min(delay_before_next_feeding_ms, delay_before_next_check_in_ms));
+  }
+}
+
+void feed() {
+  // Dispense food.
+  // TODO: handle multiple scoops of food.
+  analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+  delayAndUpdateVariables(FOOD_DISPENSE_RETRACT_DELAY_MS);
+  analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+}
+
+void check_in() {
   // Dim LED while attempting to make connection.
   RGB.brightness(64);
 
@@ -51,7 +94,7 @@ void loop() {
     // Couldn't connect to backend. Red.
     RGB.color(/* red = */ 255, /* green = */ 0, /* blue = */ 0);
     RGB.brightness(255);
-    delay(FAILURE_RETRY_DELAY_MS);
+    delayAndUpdateVariables(FAILURE_RETRY_DELAY_MS);
     return;
   }
 
@@ -63,7 +106,7 @@ void loop() {
     // Connected to backend but got bad response. Orange.
     RGB.color(/* red = */ 252, /* green = */ 60, /* blue = */ 3);
     RGB.brightness(255);
-    delay(FAILURE_RETRY_DELAY_MS);
+    delayAndUpdateVariables(FAILURE_RETRY_DELAY_MS);
     return;
   }
 
@@ -80,30 +123,41 @@ void loop() {
     // Purple.
     RGB.color(/* red = */ 255, /* green = */ 0, /* blue = */ 255);
     RGB.brightness(255);
-    delay(FAILURE_RETRY_DELAY_MS);
+    delayAndUpdateVariables(FAILURE_RETRY_DELAY_MS);
     return;
   }
 
-  if (response.has_delay_until_next_feeding_ms &&
-      response.delay_until_next_feeding_ms <
-          response.delay_until_next_check_in_ms) {
-    delay(response.delay_until_next_feeding_ms);
-    // Dispense food.
-    // TODO: handle multiple scoops of food.
-    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
-    delay(FOOD_DISPENSE_WAIT_TIME);
-    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+  // Fetch & decode were both successful.
 
-    // TODO: do this math in a systemic way.
-    delay(response.delay_until_next_check_in_ms -
-        response.delay_until_next_feeding_ms -
-            FOOD_DISPENSE_WAIT_TIME);
+  delay_before_next_check_in_ms = response.delay_until_next_check_in_ms;
+  if (response.has_delay_until_next_feeding_ms) {
+    delay_before_next_feeding_ms = response.delay_until_next_feeding_ms;
   } else {
-    // TODO: handle cases where the server is unresponsive but we've been told
-    // to feed the cat. Feed the cat, don't just wait around for the server to
-    // get fixed.
+    delay_before_next_feeding_ms = 0;
+    feed_now = false;
+  }
 
-    // Wait however long the server told us to before checking in again.
-    delay(response.delay_until_next_check_in_ms);
+  // TODO: get schedule from server, use RTC to keep feeding even if server has
+  // extended outage.
+
+  // TODO [CLEANUP]: persist these variables to nonvolatile storage so we can
+  // keep feeding in case of server outage & device reset.
+}
+
+void delayAndUpdateVariables(uint64_t delay_time_ms) {
+  delay(delay_time_ms);
+
+  if (delay_before_next_feeding_ms > delay_time_ms) {
+    delay_before_next_feeding_ms -= delay_time_ms;
+  } else if (delay_before_next_feeding_ms > 0) {
+    delay_before_next_feeding_ms = 0;
+    feed_now = true;
+  }
+
+  if (delay_before_next_check_in_ms > delay_time_ms) {
+    delay_before_next_check_in_ms -= delay_time_ms;
+  } else if (delay_before_next_check_in_ms > 0) {
+    delay_before_next_check_in_ms = 0;
+    check_in_now = true;
   }
 }
