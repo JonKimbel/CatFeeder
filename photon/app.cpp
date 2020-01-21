@@ -106,7 +106,7 @@ void check_in() {
     return;
   }
 
-  // TODO: send up EmbeddedResponse.
+  // TODO: send up EmbeddedRequest.
   responseBuffer.clear();
   httpClient.sendRequest();
   Status status = httpClient.getResponse(&responseBuffer);
