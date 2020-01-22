@@ -2,7 +2,9 @@ package com.jonkimbel.catfeeder.backend.server;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.StringTokenizer;
 
 public class HttpServer {
@@ -48,9 +50,25 @@ public class HttpServer {
   }
 
   private void handle(BufferedReader in, PrintWriter printOut, BufferedOutputStream bytesOut) throws IOException {
-    StringTokenizer tokenizer = new StringTokenizer(in.readLine());
-    Http.Method method = Http.Method.fromString(tokenizer.nextToken().toUpperCase());
-    String requestPath = tokenizer.nextToken();
+    // Read header.
+    List<String> headerLines = new ArrayList<>();
+    String lastLine = "";
+    do {
+      lastLine = in.readLine();
+      headerLines.add(lastLine);
+    } while (!lastLine.equals(""));
+    HttpHeader header = HttpHeader.fromLines(headerLines);
+
+
+
+    // https://greenbytes.de/tech/webdav/rfc7230.html#message.body.length
+    // TODO: Handle "Transfer-Encoding: Chunked"?
+    // TODO: read until Content-Length is reached
+    // TODO: don't try to read the body when neither are specified
+
+    while (!socket.isClosed() || in.ready()) {
+      System.out.printf("%s - %s\n", new Date(), in.readLine());
+    }
 
     System.out.printf("%s - request: %s %s\n", new Date(), method, requestPath);
     HttpResponse httpResponse = requestHandler.handleRequest(method, requestPath);
