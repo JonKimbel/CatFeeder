@@ -28,7 +28,7 @@ public class Backend implements RequestHandler {
   private static final int PORT = 80;
   private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
   private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10 * 60 * 1000; // 10 min.
-  private static final long INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN = 60 * 1000; // 1 min.
+  private static final long INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS = 60 * 1000; // 1 min.
   private static final int MIN_SCOOPS_PER_FEEDING = 1;
 
   private final int port;
@@ -101,8 +101,8 @@ public class Backend implements RequestHandler {
 
       long durationUntilNextCheckInMs = INTERVAL_BETWEEN_CHECK_INS_MS;
       while (Math.abs(durationUntilNextCheckInMs - durationUntilNextFeedingMs) <
-          INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN) {
-        durationUntilNextCheckInMs += INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN;
+          INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS) {
+        durationUntilNextCheckInMs += INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS;
       }
       response.setDelayUntilNextCheckInMs(durationUntilNextCheckInMs);
     }

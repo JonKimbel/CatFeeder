@@ -15,5 +15,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="libcat_feeder_proto-speed-hjar_21c7bcf" level="project" />
     <orderEntry type="library" name="libpreferences_proto-speed-hjar_58b0c486" level="project" />
+    <orderEntry type="library" name="Bundled Protobuf Distribution" level="application" />
   </component>
 </module>
