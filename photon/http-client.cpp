@@ -2,7 +2,7 @@
 
 const char *REQUEST_HEADER_FORMAT_STRING = "GET %s HTTP/1.0";
 const char *REQUEST_LINE_FORMAT_STRING = "Host: %s";
-const char *ENTITY_HEADER = "Content-Length: 0";
+const char *ENTITY_HEADER = "Content-Length: 0"; // TODO: switch this to a format string, put in # bytes here.
 
 HttpClient::HttpClient(const char* domain, const char* path, int port) {
   // Allocate one extra character for the null terminator (\0).
@@ -23,6 +23,11 @@ bool HttpClient::connect() {
 }
 
 void HttpClient::sendRequest() {
+  ArrayList<uint8_t> emptyBody;
+  sendRequest(&emptyBody);
+}
+
+void HttpClient::sendRequest(ArrayList<uint8_t>* body) {
   // Create the formatted strings for the HTTP request header.
   // NOTE: the lengths are "-1" because the format placeholders (%s) will be
   // consumed, but we need to add one space for the null-terminator (\0).
@@ -38,11 +43,13 @@ void HttpClient::sendRequest() {
   snprintf(request_line, request_line_length,
       REQUEST_LINE_FORMAT_STRING, domain);
 
-  // Write the HTTP header to the TCP connection, with an empty body.
+  // Write the HTTP header to the TCP connection.
   _tcpClient.println(request_header);
   _tcpClient.println(request_line);
   _tcpClient.println(ENTITY_HEADER);
   _tcpClient.println();
+  // Write the body to the TCP connection.
+  _tcpClient.write(body->data, body->length);
 
   free(request_header);
   free(request_line);

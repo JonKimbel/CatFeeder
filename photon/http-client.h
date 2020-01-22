@@ -55,6 +55,10 @@ class HttpClient {
     // first.
     void sendRequest();
 
+    // Sends an HTTP request with the specified body over the TCP connection.
+    // connect() must be called first.
+    void sendRequest(ArrayList<uint8_t>* body);
+
     bool responseReady();
 
     // Reads the response from the server, strips out the header, and writes the

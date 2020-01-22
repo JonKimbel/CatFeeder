@@ -1,6 +1,7 @@
 #include <Wire.h>
 #include <stdlib.h>
 #include <pb_decode.h>
+#include <pb_encode.h>
 #include "array-list.h"
 #include "cat_feeder.pb.h"
 #include "http-client.h"
@@ -30,6 +31,8 @@ void check_in();
 catfeeder_api_EmbeddedResponse sendRequest();
 void delayAndUpdateVariables(uint64_t delay_time_ms);
 void updateVariables(uint64_t time_passed_ms);
+static bool arrayListOstreamWrite(pb_ostream_t *stream, const pb_byte_t *buf, size_t count);
+pb_ostream_t arrayListToOstream(ArrayList<pb_byte_t>* list);
 
 ////////////////////////////////////////////////////////////////////////////////
 // VARIABLES.
@@ -48,6 +51,11 @@ bool feed_now;
 uint64_t delay_before_next_check_in_ms;
 bool check_in_now = true; // Immediately check in after a restart.
 
+// How long we've waited since the last feeding. Only means anything if has_fed
+// is set.
+uint64_t time_since_last_feeding_ms;
+bool has_fed;
+
 // How many scoops to serve per feeding. Should not be set less than
 // MINIMUM_SCOOPS_TO_FEED.
 uint32_t scoops_to_feed = MINIMUM_SCOOPS_TO_FEED;
@@ -65,6 +73,8 @@ void setup() {
 void loop() {
   if (feed_now) {
     feed();
+    time_since_last_feeding_ms = 0;
+    has_fed = true;
     feed_now = false;
   } else if (check_in_now) {
     check_in();
@@ -78,10 +88,17 @@ void loop() {
 void feed() {
   // Dispense food.
   for (uint32_t i = 0; i < scoops_to_feed; i++) {
-    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+    // TODO: go back to running the servos before final deploy.
+    // analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+    for (int blink = 0; blink < 3; blink++) {
+      RGB.brightness(0);
+      delayAndUpdateVariables(500);
+      RGB.brightness(255);
+      delayAndUpdateVariables(500);
+    }
     delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
-    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
-    delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
+    // analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+    // delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
   }
 }
 
@@ -92,6 +109,9 @@ void check_in() {
 
   scoops_to_feed = max(response.scoops_to_feed, MINIMUM_SCOOPS_TO_FEED);
   delay_before_next_check_in_ms = response.delay_until_next_check_in_ms;
+  if (delay_before_next_check_in_ms == 0) {
+    check_in_now = true;
+  }
   if (response.has_delay_until_next_feeding_ms) {
     delay_before_next_feeding_ms = response.delay_until_next_feeding_ms;
   } else {
@@ -119,9 +139,26 @@ catfeeder_api_EmbeddedResponse sendRequest() {
     return response; // Default response.
   }
 
-  // TODO: send up EmbeddedRequest.
+  // Build request message.
+  catfeeder_api_EmbeddedRequest request = catfeeder_api_EmbeddedRequest_init_default;
+  if (has_fed) {
+    request.has_time_since_last_feeding_ms = true;
+    request.time_since_last_feeding_ms = time_since_last_feeding_ms;
+  }
+
+  // Encode request message into `requestBuffer`.
+  ArrayList<uint8_t> requestBuffer;
+  pb_ostream_t requestOstream = arrayListToOstream(&requestBuffer);
+  if (!pb_encode(&requestOstream, catfeeder_api_EmbeddedRequest_fields, &request)) {
+    // Could not encode request. Blue.
+    RGB.color(/* red = */ 0, /* green = */ 0, /* blue = */ 255);
+    RGB.brightness(255);
+    return response; // Default response.
+  }
+
+  httpClient.sendRequest(&requestBuffer);
+
   ArrayList<uint8_t> responseBuffer;
-  httpClient.sendRequest();
   Status status = httpClient.getResponse(&responseBuffer);
 
   if (status != HTTP_STATUS_OK) {
@@ -135,7 +172,7 @@ catfeeder_api_EmbeddedResponse sendRequest() {
   RGB.color(/* red = */ 0, /* green = */ 255, /* blue = */ 0);
   RGB.brightness(255);
 
-  // Decode response.
+  // Decode response into `response`.
   pb_istream_t stream = pb_istream_from_buffer(
       responseBuffer.data, responseBuffer.length);
   if (!pb_decode(&stream, catfeeder_api_EmbeddedResponse_fields, &response)) {
@@ -169,4 +206,25 @@ void updateVariables(uint64_t time_passed_ms) {
     delay_before_next_check_in_ms = 0;
     check_in_now = true;
   }
+}
+
+static bool arrayListOstreamWrite(pb_ostream_t *stream, const pb_byte_t *buf, size_t count) {
+  ArrayList<pb_byte_t>* list = (ArrayList<pb_byte_t>*)stream->state;
+
+  for (size_t i = 0; i < count; i++) {
+    if (!list->add(buf[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+pb_ostream_t arrayListToOstream(ArrayList<pb_byte_t>* list) {
+    pb_ostream_t stream;
+    stream.state = list;
+    stream.callback = &arrayListOstreamWrite;
+    stream.max_size = 2000000000;  // Approx. maximum of int.
+    stream.bytes_written = 0;
+    return stream;
 }
