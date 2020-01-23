@@ -3,13 +3,12 @@ package com.jonkimbel.catfeeder.backend;
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences;
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences.FeedingSchedule;
+import com.jonkimbel.catfeeder.backend.server.*;
 import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
+import com.jonkimbel.catfeeder.proto.CatFeeder;
+import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedRequest;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedResponse;
-import com.jonkimbel.catfeeder.backend.server.Http;
-import com.jonkimbel.catfeeder.backend.server.HttpServer;
 import com.jonkimbel.catfeeder.backend.server.HttpServer.RequestHandler;
-import com.jonkimbel.catfeeder.backend.server.QueryParser;
-import com.jonkimbel.catfeeder.backend.server.HttpResponse;
 import com.jonkimbel.catfeeder.backend.template.TemplateFiller;
 import com.jonkimbel.catfeeder.backend.time.Time;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -27,9 +26,12 @@ import java.util.*;
 public class Backend implements RequestHandler {
   private static final int PORT = 80;
   private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
-  private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10 * 60 * 1000; // 10 min.
+  private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10000; // 10 min. TODO: reset this.
   private static final long INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS = 60 * 1000; // 1 min.
   private static final int MIN_SCOOPS_PER_FEEDING = 1;
+
+  // TODO: find a way to kill the server gracefully so the embedded device isn't stuck trying to
+  // transfer data. OR get the device to be resilient to such cases.
 
   private final int port;
 
@@ -53,29 +55,33 @@ public class Backend implements RequestHandler {
   }
 
   @Override
-  public HttpResponse handleRequest(Http.Method method, String requestPath) throws IOException {
+  public HttpResponse handleRequest(HttpHeader requestHeader, String requestBody)
+      throws IOException {
     HttpResponse.Builder responseBuilder = HttpResponse.builder();
 
-    if (method != Http.Method.GET) {
+    if (requestHeader.method != Http.Method.GET) {
       return responseBuilder.setResponseCode(Http.ResponseCode.NOT_IMPLEMENTED).build();
     }
 
-    if (requestPath.equals("/")) {
+    if (requestHeader.path.equals("/")) {
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
           .build();
-    } else if (requestPath.startsWith("/write?")) {
+    } else if (requestHeader.path.startsWith("/write?")) {
       // TODO [CLEANUP]: switch from GET to POST for this, it results in weird re-sending behavior
       // when you refresh the page.
-      Map<String, String> queryKeysAndValues = QueryParser.parseQuery(requestPath);
+      Map<String, String> queryKeysAndValues = QueryParser.parseQuery(requestHeader.path);
       updateFeedingPreferences(queryKeysAndValues);
 
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
           .build();
-    } else if (requestPath.startsWith("/photon")) {
+    } else if (requestHeader.path.startsWith("/photon")) {
+      EmbeddedRequest request = EmbeddedRequest.parseFrom(requestBody.getBytes());
+      System.out.printf("%s - %s\n", new Date(), request);
+
       PreferencesStorage.set(PreferencesStorage.get().toBuilder()
           .setLastPhotonCheckInMsSinceEpoch(System.currentTimeMillis())
           .build());

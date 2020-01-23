@@ -12,7 +12,7 @@ public class HttpServer {
   private final RequestHandler requestHandler;
 
   public interface RequestHandler {
-    HttpResponse handleRequest(Http.Method method, String requestPath) throws IOException;
+    HttpResponse handleRequest(HttpHeader requestHeader, String requestBody) throws IOException;
   }
 
   public static Thread threadForConnection(Socket socket, RequestHandler requestHandler) {
@@ -50,30 +50,35 @@ public class HttpServer {
   }
 
   private void handle(BufferedReader in, PrintWriter printOut, BufferedOutputStream bytesOut) throws IOException {
-    // Read header.
+    // Read the request header.
     List<String> headerLines = new ArrayList<>();
     String lastLine = "";
     do {
       lastLine = in.readLine();
       headerLines.add(lastLine);
     } while (!lastLine.equals(""));
-    HttpHeader header = HttpHeader.fromLines(headerLines);
+    HttpHeader requestHeader = HttpHeader.fromLines(headerLines);
 
-
-
-    // https://greenbytes.de/tech/webdav/rfc7230.html#message.body.length
+    // Read the request body.
     // TODO: Handle "Transfer-Encoding: Chunked"?
-    // TODO: read until Content-Length is reached
-    // TODO: don't try to read the body when neither are specified
-
-    while (!socket.isClosed() || in.ready()) {
-      System.out.printf("%s - %s\n", new Date(), in.readLine());
+    // https://greenbytes.de/tech/webdav/rfc7230.html#message.body.length
+    String requestBody = "";
+    if (requestHeader.contentLength != null && requestHeader.contentLength > 0) {
+      char[] bodyBuffer = new char[requestHeader.contentLength];
+      while (!socket.isClosed() || in.ready()) {
+        in.read(bodyBuffer, /* off = */ 0, /* len = */ requestHeader.contentLength);
+      }
+      requestBody = new String(bodyBuffer);
     }
 
-    System.out.printf("%s - request: %s %s\n", new Date(), method, requestPath);
-    HttpResponse httpResponse = requestHandler.handleRequest(method, requestPath);
+    System.out.printf("%s - request: %s %s\n", new Date(), requestHeader.method, requestHeader.path);
+    System.out.printf("%s - body: %s\n", new Date(), requestBody); // TODO [CLEANUP]: remove this.
+
+    // Determine the response header & body.
+    HttpResponse httpResponse = requestHandler.handleRequest(requestHeader, requestBody);
     System.out.printf("%s - response: %s\n", new Date(), httpResponse.getResponseCode());
 
+    // Write the response header & body.
     if (httpResponse.isBodyHtml()) {
       writeHeader(printOut, httpResponse.getResponseCode(), Http.ContentType.HTML,
           /* contentLength = */ httpResponse.getHtmlBody().length());

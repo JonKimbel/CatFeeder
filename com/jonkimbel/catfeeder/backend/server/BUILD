@@ -5,6 +5,7 @@ java_library(
     srcs = [
         "Http.java",
         "HttpServer.java",
+        "HttpHeader.java",
         "HttpResponse.java",
     ],
     deps = [
