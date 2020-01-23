@@ -1,8 +1,8 @@
 #include "http-client.h"
 
-const char *REQUEST_HEADER_FORMAT_STRING = "GET %s HTTP/1.0";
-const char *REQUEST_LINE_FORMAT_STRING = "Host: %s";
-const char *ENTITY_HEADER = "Content-Length: 0"; // TODO: switch this to a format string, put in # bytes here.
+const char *HEADER_METHOD_FORMAT_STRING = "GET %s HTTP/1.0";
+const char *HEADER_HOST_FORMAT_STRING = "Host: %s";
+const char *HEADER_CONTENT_LENGTH_FORMAT_STRING = "Content-Length: %d";
 
 HttpClient::HttpClient(const char* domain, const char* path, int port) {
   // Allocate one extra character for the null terminator (\0).
@@ -31,28 +31,36 @@ void HttpClient::sendRequest(ArrayList<uint8_t>* body) {
   // Create the formatted strings for the HTTP request header.
   // NOTE: the lengths are "-1" because the format placeholders (%s) will be
   // consumed, but we need to add one space for the null-terminator (\0).
-  size_t request_header_length =
-      strlen(path) + strlen(REQUEST_HEADER_FORMAT_STRING) - 1;
-  char *request_header = (char *) malloc(request_header_length * sizeof(char));
-  snprintf(request_header, request_header_length,
-      REQUEST_HEADER_FORMAT_STRING, path);
+  size_t header_method_length =
+      strlen(path) + strlen(HEADER_METHOD_FORMAT_STRING) - 1;
+  char *header_method = (char *) malloc(header_method_length * sizeof(char));
+  snprintf(header_method, header_method_length,
+      HEADER_METHOD_FORMAT_STRING, path);
 
-  size_t request_line_length =
-      strlen(domain) + strlen(REQUEST_LINE_FORMAT_STRING) - 1;
-  char *request_line = (char *) malloc(request_line_length * sizeof(char));
-  snprintf(request_line, request_line_length,
-      REQUEST_LINE_FORMAT_STRING, domain);
+  size_t header_host_length =
+      strlen(domain) + strlen(HEADER_HOST_FORMAT_STRING) - 1;
+  char *header_host = (char *) malloc(header_host_length * sizeof(char));
+  snprintf(header_host, header_host_length,
+      HEADER_HOST_FORMAT_STRING, domain);
+
+  size_t content_length_digit_length = body->length == 0 ? 1 : floor(log10(body->length)) + 1;
+  size_t header_content_length_length =
+      content_length_digit_length + strlen(HEADER_CONTENT_LENGTH_FORMAT_STRING) - 1;
+  char *header_content_length = (char *) malloc(header_content_length_length * sizeof(char));
+  snprintf(header_content_length, header_content_length_length,
+      HEADER_CONTENT_LENGTH_FORMAT_STRING, body->length);
 
   // Write the HTTP header to the TCP connection.
-  _tcpClient.println(request_header);
-  _tcpClient.println(request_line);
-  _tcpClient.println(ENTITY_HEADER);
+  _tcpClient.println(header_method);
+  _tcpClient.println(header_host);
+  _tcpClient.println(header_content_length);
   _tcpClient.println();
   // Write the body to the TCP connection.
   _tcpClient.write(body->data, body->length);
 
-  free(request_header);
-  free(request_line);
+  free(header_method);
+  free(header_host);
+  free(header_content_length);
 }
 
 bool HttpClient::responseReady() {

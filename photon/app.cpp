@@ -206,6 +206,10 @@ void updateVariables(uint64_t time_passed_ms) {
     delay_before_next_check_in_ms = 0;
     check_in_now = true;
   }
+
+  if (has_fed) {
+    time_since_last_feeding_ms += time_passed_ms;
+  }
 }
 
 static bool arrayListOstreamWrite(pb_ostream_t *stream, const pb_byte_t *buf, size_t count) {
