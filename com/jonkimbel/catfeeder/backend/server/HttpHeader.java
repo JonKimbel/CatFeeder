@@ -53,6 +53,7 @@ public class HttpHeader {
       }
 
       Matcher matcher = regexPattern.matcher(lineInHeader);
+      // TODO: debug failure:
       // lineInHeader Content-Length: 0 is not a representation of HeaderLine.CONTENT_LENGTH
       if (!matcher.matches() || partNameGroupNumber >= matcher.groupCount()) {
         throw new IllegalStateException(
