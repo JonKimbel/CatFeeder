@@ -27,7 +27,8 @@ public class HttpHeader {
 
   private enum HeaderLine {
     HOST("^Host\\s(.*)", HeaderPart.HOST),
-    CONTENT_LENGTH("^Content Length\\s(\\d*)", HeaderPart.CONTENT_LENGTH),
+    // TODO: is this standard? are there multiple ways to do this?
+    CONTENT_LENGTH("^Content-Length:\\s(.*)", HeaderPart.CONTENT_LENGTH),
     TRANSFER_ENCODING("^Transfer Encoding:\\s(.*)", HeaderPart.TRANSFER_ENCODING),
     METHOD_AND_PATH("^(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)\\s(\\S*)\\s(.*)",
         HeaderPart.METHOD, HeaderPart.PATH, HeaderPart.HTTP_VERSION),
@@ -52,6 +53,7 @@ public class HttpHeader {
       }
 
       Matcher matcher = regexPattern.matcher(lineInHeader);
+      // lineInHeader Content-Length: 0 is not a representation of HeaderLine.CONTENT_LENGTH
       if (!matcher.matches() || partNameGroupNumber >= matcher.groupCount()) {
         throw new IllegalStateException(
             String.format("lineInHeader %s is not a representation of HeaderLine.%s",

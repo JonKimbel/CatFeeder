@@ -27,6 +27,8 @@ void HttpClient::sendRequest() {
   sendRequest(&emptyBody);
 }
 
+// TODO: kill connection at some point.
+
 void HttpClient::sendRequest(ArrayList<uint8_t>* body) {
   // Create the formatted strings for the HTTP request header.
   // NOTE: the lengths are "-1" because the format placeholders (%s) will be

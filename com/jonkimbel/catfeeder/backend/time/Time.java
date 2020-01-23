@@ -15,7 +15,7 @@ public class Time {
   private static final DateTimeFormatter TIME_FORMATTER =
       DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
   private static final ZoneId DEVICE_TIME_ZONE = ZoneId.of("US/Pacific");
-  private static final int MORNING_TIME_MINUTES_INTO_DAY = 6 * 60 - 15; // 5:45AM.
+  private static final int MORNING_TIME_MINUTES_INTO_DAY = 6 * 60 + 45; // 6:45AM.
   private static final int EVENING_TIME_MINUTES_INTO_DAY = 18 * 60; // 6PM.
 
   // TODO [CLEANUP]: Implement support for user-defined device timezones.

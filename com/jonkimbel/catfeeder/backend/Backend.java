@@ -79,8 +79,11 @@ public class Backend implements RequestHandler {
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
           .build();
     } else if (requestHeader.path.startsWith("/photon")) {
+      // TODO: figure out why this is always empty, perhaps a client bug?
       EmbeddedRequest request = EmbeddedRequest.parseFrom(requestBody.getBytes());
-      System.out.printf("%s - %s\n", new Date(), request);
+      System.out.printf("%s - content length: %s\n", new Date(), requestHeader.contentLength);
+      System.out.printf("%s - time since last feeding: %s\n", new Date(),
+          request.hasTimeSinceLastFeedingMs() ? request.getTimeSinceLastFeedingMs() : "null");
 
       PreferencesStorage.set(PreferencesStorage.get().toBuilder()
           .setLastPhotonCheckInMsSinceEpoch(System.currentTimeMillis())

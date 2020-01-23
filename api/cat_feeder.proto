@@ -7,7 +7,6 @@ option java_package = "com.jonkimbel.catfeeder.proto";
 message EmbeddedRequest {
   // How long ago the device last fed the cat.
   // Optional. Absence of this field means the device hasn't fed the cat since it was last turned on.
-  // TODO: implement on client & server.
   optional uint64 time_since_last_feeding_ms = 1;
 }
 
