@@ -105,7 +105,7 @@ public class Backend implements RequestHandler {
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
 
-  // TODO: continue scanning from here.
+  // TODO: continue scanning from here, then go through backend packages.
 
   private byte[] getProtobufResponse() {
     EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
