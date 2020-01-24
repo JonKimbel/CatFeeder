@@ -27,9 +27,8 @@ public class HttpHeader {
 
   private enum HeaderLine {
     HOST("^Host\\s(.*)", HeaderPart.HOST),
-    // TODO: is this standard? are there multiple ways to do this?
     CONTENT_LENGTH("^Content-Length:\\s(.*)", HeaderPart.CONTENT_LENGTH),
-    TRANSFER_ENCODING("^Transfer Encoding:\\s(.*)", HeaderPart.TRANSFER_ENCODING),
+    TRANSFER_ENCODING("^Transfer-Encoding:\\s(.*)", HeaderPart.TRANSFER_ENCODING),
     METHOD_AND_PATH("^(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)\\s(\\S*)\\s(.*)",
         HeaderPart.METHOD, HeaderPart.PATH, HeaderPart.HTTP_VERSION),
     UNKNOWN(""),
@@ -53,12 +52,18 @@ public class HttpHeader {
       }
 
       Matcher matcher = regexPattern.matcher(lineInHeader);
-      // TODO: debug failure:
-      // lineInHeader Content-Length: 0 is not a representation of HeaderLine.CONTENT_LENGTH
-      if (!matcher.matches() || partNameGroupNumber >= matcher.groupCount()) {
+
+      if (!matcher.matches()) {
         throw new IllegalStateException(
             String.format("lineInHeader %s is not a representation of HeaderLine.%s",
-             lineInHeader, this));
+            lineInHeader, this));
+      }
+
+      // Again, regex groups are 1-based.
+      if (partNameGroupNumber > matcher.groupCount()) {
+        throw new IllegalStateException(
+            String.format("lineInHeader %s (HeaderLine.%s) does not have group %s",
+                lineInHeader, this, partNameGroupNumber));
       }
 
       return matcher.group(partNameGroupNumber);
@@ -133,6 +138,7 @@ public class HttpHeader {
     Builder builder = new Builder();
 
     for (String line : lines) {
+      System.out.println(line);
       HeaderLine headerLine = HeaderLine.fromString(line);
       switch (headerLine) {
         case HOST:
@@ -141,9 +147,13 @@ public class HttpHeader {
 
         case CONTENT_LENGTH:
           Integer contentLength = null;
+          String contentLengthString = headerLine.getPart(line, HeaderPart.CONTENT_LENGTH);
           try {
-            Integer.parseInt(headerLine.getPart(line, HeaderPart.CONTENT_LENGTH));
-          } catch (NumberFormatException e) { } // TODO [CLEANUP]: log.
+            contentLength = Integer.parseInt(contentLengthString);
+          } catch (NumberFormatException e) {
+            System.err.printf("Line %s contains CONTENT_LENGTH '%s' which could not be parsed as " +
+                "an integer", line, contentLengthString);
+          }
           builder.setContentLength(contentLength);
           break;
 
