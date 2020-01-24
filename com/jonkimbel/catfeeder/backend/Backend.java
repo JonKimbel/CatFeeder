@@ -20,8 +20,8 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-// TODO [CLEANUP]: Add nullability tests.
-// TODO [CLEANUP]: Add unit tests.
+// TODO [V2]: Add nullability tests.
+// TODO [V2]: Add unit tests.
 
 public class Backend implements RequestHandler {
   private static final int PORT = 80;
@@ -30,13 +30,13 @@ public class Backend implements RequestHandler {
   private static final long INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS = 60 * 1000; // 1 min.
   private static final int MIN_SCOOPS_PER_FEEDING = 1;
 
-  // TODO: find a way to kill the server gracefully so the embedded device isn't stuck trying to
-  // transfer data. OR get the device to be resilient to such cases.
+  // TODO [V1]: find a way to kill the server gracefully so the embedded device isn't stuck trying
+  // to transfer data. OR get the device to be resilient to such cases.
 
   private final int port;
 
   public static void main(String[] args) throws IOException {
-    // TODO [CLEANUP]: take port as an argument.
+    // TODO [V2]: take port as an argument.
     new Backend(PORT).run();
   }
 
@@ -69,18 +69,19 @@ public class Backend implements RequestHandler {
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
           .build();
     } else if (requestHeader.path.startsWith("/write?")) {
-      // TODO [CLEANUP]: switch from GET to POST for this, it results in weird re-sending behavior
-      // when you refresh the page.
+      // TODO [V1]: switch from GET to POST for this, it results in weird re-sending behavior when
+      //  you refresh the page. Or maybe redirect to "/"?
       Map<String, String> queryKeysAndValues = QueryParser.parseQuery(requestHeader.path);
       updateFeedingPreferences(queryKeysAndValues);
 
-      // TODO: add a "feed now" button.
+      // TODO [V1]: add a "feed now" button.
 
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
           .build();
     } else if (requestHeader.path.startsWith("/photon")) {
+      // TODO [V1]: split out into a separate method.
       EmbeddedRequest request = EmbeddedRequest.parseFrom(requestBody.getBytes());
 
       Preferences.Builder preferencesBuilder = PreferencesStorage.get().toBuilder()
@@ -93,6 +94,8 @@ public class Backend implements RequestHandler {
 
       PreferencesStorage.set(preferencesBuilder.build());
 
+      // TODO [V1]: account for poor photon time keeping, ensure we never over-feed due to a check
+      // in right after a slightly early feed.
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
           .setProtobufBody(getProtobufResponse())
@@ -101,6 +104,8 @@ public class Backend implements RequestHandler {
 
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
+
+  // TODO: continue scanning from here.
 
   private byte[] getProtobufResponse() {
     EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
