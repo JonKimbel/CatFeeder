@@ -5,8 +5,11 @@ package catfeeder.proto;
 option java_package = "com.jonkimbel.catfeeder.backend.proto";
 
 message Preferences {
+  // Feeding-related data.
   optional FeedingPreferences feeding_preferences = 1;
 
+  // How long it has been since the device last checked in with the server.
+  // Optional. Absence of this value means the device has never checked in.
   optional uint64 last_photon_check_in_ms_since_epoch = 2;
 }
 
@@ -18,11 +21,19 @@ message FeedingPreferences {
     AUTO_FEED_IN_MORNINGS_AND_EVENINGS = 3;
   }
 
+  // The schedule on which the cat should be fed.
+  // Required.
   optional FeedingSchedule feeding_schedule = 1;
 
+  // How many scoops to feed the cat at each feeding time.
+  // Optional. Absence or value less than one will result in one scoop being fed.
   optional int32 number_of_scoops_per_feeding = 4;
 
+  // The time at which the cat was last auto-fed.
+  // Optional. Absence means the cat has never been fed.
   optional uint64 last_feeding_time_ms_since_epoch = 2;
 
+  // The time at which the cat's feeding schedule was last changed.
+  // Optional. Absence means the cat's feeding schedule has never changed.
   optional uint64 last_feeding_schedule_change_ms_since_epoch = 3;
 }

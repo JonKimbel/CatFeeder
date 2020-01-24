@@ -133,7 +133,6 @@ public class HttpHeader {
     }
   }
 
-
   public static HttpHeader fromLines(List<String> lines) {
     Builder builder = new Builder();
 

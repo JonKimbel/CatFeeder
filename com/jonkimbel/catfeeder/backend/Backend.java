@@ -74,6 +74,8 @@ public class Backend implements RequestHandler {
       Map<String, String> queryKeysAndValues = QueryParser.parseQuery(requestHeader.path);
       updateFeedingPreferences(queryKeysAndValues);
 
+      // TODO: add a "feed now" button.
+
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))

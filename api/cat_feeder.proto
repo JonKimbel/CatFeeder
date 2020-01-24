@@ -12,6 +12,7 @@ message EmbeddedRequest {
 
 message EmbeddedResponse {
   // How long to wait before making another request to the server, in milliseconds.
+  // The default value will be used by the device when it's unable to contact the server.
   // Required.
   optional uint64 delay_until_next_check_in_ms = 1 [default = 60000];
 
