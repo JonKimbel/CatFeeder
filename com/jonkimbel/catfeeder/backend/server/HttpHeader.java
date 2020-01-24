@@ -137,7 +137,6 @@ public class HttpHeader {
     Builder builder = new Builder();
 
     for (String line : lines) {
-      System.out.println(line);
       HeaderLine headerLine = HeaderLine.fromString(line);
       switch (headerLine) {
         case HOST:
