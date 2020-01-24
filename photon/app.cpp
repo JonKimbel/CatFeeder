@@ -174,7 +174,7 @@ catfeeder_api_EmbeddedResponse sendRequest() {
   Status status = httpClient.getResponse(&responseBuffer);
   httpClient.disconnect();
 
-  // Blue while decoding and applying with response.
+  // Blue while reading the response.
   RGB.color(/* red = */ 0, /* green = */ 0, /* blue = */ 255);
   if (status != HTTP_STATUS_OK) {
     return catfeeder_api_EmbeddedResponse_init_default;
