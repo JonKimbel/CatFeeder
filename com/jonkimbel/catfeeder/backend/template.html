@@ -11,8 +11,17 @@
       <h1>JonKimbel/CatFeeder</h1>
 
       <div class="w3-red w3-padding" style="display: {{check_in_warning_display}}">
-        <p>WARNING: feeder has not checked in with the server recently! Is it plugged in? Is the LED green?</p>
+        <p>WARNING: feeder has not checked in with the server recently! Is it plugged in? What color is the LED?</p>
         <p>Last check in was at {{check_in_warning_time}}</p>
+        <ul class="w3-ul w3-border w3-black">
+          <li class="w3-text-red">Red - trying to connect to the backend
+          <li class="w3-text-orange">Orange - building and encoding request
+          <li class="w3-text-yellow">Yellow - sending request
+          <li class="w3-text-green">Green - receiving response
+          <li class="w3-text-blue">Blue - handling response
+          <li class="w3-text-purple">Purple - handled response successfully
+        </ul>
+        <p></p>
       </div>
 
       <ul class="w3-ul w3-border w3-black">

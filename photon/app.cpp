@@ -173,11 +173,9 @@ catfeeder_api_EmbeddedResponse sendRequest() {
   Status status = httpClient.getResponse(&responseBuffer);
   httpClient.disconnect();
 
-  // Blue while dealing with response.
+  // Blue while decoding and applying with response.
   RGB.color(/* red = */ 0, /* green = */ 0, /* blue = */ 255);
   if (status != HTTP_STATUS_OK) {
-    // Connected to backend but got bad response. Orange.
-    RGB.color(/* red = */ 252, /* green = */ 60, /* blue = */ 3);
     return catfeeder_api_EmbeddedResponse_init_default;
   }
 
@@ -190,7 +188,7 @@ catfeeder_api_EmbeddedResponse sendRequest() {
     return catfeeder_api_EmbeddedResponse_init_default;
   }
 
-  // Violet when fetch & decode were both successful.
+  // Purple when fetch & decode were both successful.
   RGB.color(/* red = */ 255, /* green = */ 0, /* blue = */ 255);
   return response;
 }
