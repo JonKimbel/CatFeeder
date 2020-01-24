@@ -95,6 +95,9 @@ void loop() {
   } else if (check_in_now) {
     check_in_now = false;
     check_in();
+    // Assume a request always takes 5s.
+    // TODO [V2]: actually measure the time that passes.
+    updateVariables(/* time_passed_ms= */ 5000);
   } else {
     // If we're not feeding or checking in, we're waiting.
     delayAndUpdateVariables(min(delay_before_next_feeding_ms, delay_before_next_check_in_ms));
@@ -113,9 +116,6 @@ void feed() {
 
 void check_in() {
   catfeeder_api_EmbeddedResponse response = sendRequest();
-  // Assume a request always takes 5s.
-  // TODO [V2]: actually measure the time that passes.
-  updateVariables(/* time_passed_ms= */ 5000);
 
   scoops_to_feed = max(response.scoops_to_feed, MINIMUM_SCOOPS_TO_FEED);
   delay_before_next_check_in_ms = response.delay_until_next_check_in_ms;
