@@ -22,12 +22,14 @@ bool HttpClient::connect() {
   return _tcpClient.connect(domain, port);
 }
 
+void HttpClient::disconnect() {
+  _tcpClient.stop();
+}
+
 void HttpClient::sendRequest() {
   ArrayList<uint8_t> emptyBody;
   sendRequest(&emptyBody);
 }
-
-// TODO: kill connection at some point.
 
 void HttpClient::sendRequest(ArrayList<uint8_t>* body) {
   // Create the formatted strings for the HTTP request header.
@@ -84,7 +86,6 @@ Status HttpClient::getResponse(ArrayList<uint8_t>* body) {
       body->add(_tcpClient.read());
     }
   }
-  _tcpClient.stop();
 
   return status;
 }

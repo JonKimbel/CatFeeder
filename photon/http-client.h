@@ -51,6 +51,10 @@ class HttpClient {
     // Starts a TCP connection with the server. Required for sending requests.
     bool connect();
 
+    // Stops ongoing TCP connections with the server. Must be paired with
+    // connect calls.
+    void disconnect();
+
     // Sends an HTTP request over the TCP connection. connect() must be called
     // first.
     void sendRequest();

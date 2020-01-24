@@ -129,61 +129,61 @@ void check_in() {
 catfeeder_api_EmbeddedResponse sendRequest() {
   catfeeder_api_EmbeddedResponse response = catfeeder_api_EmbeddedResponse_init_default;
 
-  // Dim LED while attempting to make connection.
-  RGB.brightness(64);
-
+  // Red while connecting.
+  RGB.color(/* red = */ 255, /* green = */ 0, /* blue = */ 0);
   if (!httpClient.connect()) {
-    // Couldn't connect to backend. Red.
-    RGB.color(/* red = */ 255, /* green = */ 0, /* blue = */ 0);
-    RGB.brightness(255);
+    // Could not connect to backend.
+    httpClient.disconnect();
     return response; // Default response.
   }
 
-  // Build request message.
+  // Orange while building and encoding request message into `requestBuffer`.
+  RGB.color(/* red = */ 252, /* green = */ 60, /* blue = */ 3);
   catfeeder_api_EmbeddedRequest request = catfeeder_api_EmbeddedRequest_init_default;
-  if (has_fed) {
-    request.has_time_since_last_feeding_ms = true;
-    request.time_since_last_feeding_ms = time_since_last_feeding_ms;
-  }
+  // TODO: revert after debugging.
+  request.has_time_since_last_feeding_ms = true;
+  request.time_since_last_feeding_ms = time_since_last_feeding_ms;
+//  if (has_fed) {
+//    request.has_time_since_last_feeding_ms = true;
+//    request.time_since_last_feeding_ms = time_since_last_feeding_ms;
+//  }
 
-  // Encode request message into `requestBuffer`.
   ArrayList<uint8_t> requestBuffer;
   pb_ostream_t requestOstream = arrayListToOstream(&requestBuffer);
   if (!pb_encode(&requestOstream, catfeeder_api_EmbeddedRequest_fields, &request)) {
-    // Could not encode request. Blue.
-    RGB.color(/* red = */ 0, /* green = */ 0, /* blue = */ 255);
-    RGB.brightness(255);
+    // Could not encode request.
+    httpClient.disconnect();
     return response; // Default response.
   }
 
+  // Yellow while sending request.
+  RGB.color(/* red = */ 255, /* green = */ 250, /* blue = */ 0);
   httpClient.sendRequest(&requestBuffer);
 
+  // Green while getting response.
+  RGB.color(/* red = */ 0, /* green = */ 255, /* blue = */ 0);
   ArrayList<uint8_t> responseBuffer;
   Status status = httpClient.getResponse(&responseBuffer);
+  httpClient.disconnect();
 
+  // Blue while dealing with response.
+  RGB.color(/* red = */ 0, /* green = */ 0, /* blue = */ 255);
   if (status != HTTP_STATUS_OK) {
     // Connected to backend but got bad response. Orange.
     RGB.color(/* red = */ 252, /* green = */ 60, /* blue = */ 3);
-    RGB.brightness(255);
     return response; // Default response.
   }
-
-  // Got successful response from backend. Green.
-  RGB.color(/* red = */ 0, /* green = */ 255, /* blue = */ 0);
-  RGB.brightness(255);
 
   // Decode response into `response`.
   pb_istream_t stream = pb_istream_from_buffer(
       responseBuffer.data, responseBuffer.length);
   if (!pb_decode(&stream, catfeeder_api_EmbeddedResponse_fields, &response)) {
     // Got successful response from the server, but the body was malformed.
-    // Purple.
-    RGB.color(/* red = */ 255, /* green = */ 0, /* blue = */ 255);
-    RGB.brightness(255);
     return response; // Default response.
   }
 
-  // Fetch & decode were both successful.
+  // Violet when fetch & decode were both successful.
+  RGB.color(/* red = */ 255, /* green = */ 0, /* blue = */ 255);
   return response; // Actual response.
 }
 
