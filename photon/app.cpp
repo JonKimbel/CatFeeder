@@ -90,6 +90,7 @@ void loop() {
     feed_now = false;
     feed();
     time_since_last_feeding_ms = 0;
+    // TODO [V1]: check in immediately after feeding.
     has_fed = true;
   } else if (check_in_now) {
     check_in_now = false;

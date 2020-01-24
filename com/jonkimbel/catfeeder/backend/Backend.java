@@ -134,6 +134,11 @@ public class Backend implements RequestHandler {
   }
 
   private String getHtmlResponse(String templatePath) throws IOException {
+    // TODO [V1]: Add passcode to web UI
+    // Oauth? Probably not allowed over HTTP, but worth investigation.
+    // See this info on cookie protocol:
+    // https://stackoverflow.com/questions/3467114/how-are-cookies-passed-in-the-http-protocol
+
     String template = new String(getClass().getResourceAsStream(templatePath).readAllBytes(),
         StandardCharsets.UTF_8);
     Map<String, String> templateValues = new HashMap<>();
