@@ -87,13 +87,13 @@ void setup() {
 
 void loop() {
   if (feed_now) {
+    feed_now = false;
     feed();
     time_since_last_feeding_ms = 0;
     has_fed = true;
-    feed_now = false;
   } else if (check_in_now) {
-    check_in();
     check_in_now = false;
+    check_in();
   } else {
     // If we're not feeding or checking in, we're waiting.
     delayAndUpdateVariables(min(delay_before_next_feeding_ms, delay_before_next_check_in_ms));
