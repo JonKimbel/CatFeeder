@@ -14,10 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS.
 
-// TODO: add a test button/switch.
-
-// TODO [CLEANUP]: redesign the food drop funnel vertical walls, put a slow
-// slope throughout the top of the food tube so there's never a pinch.
+// TODO [V1]: add a test button/switch.
 
 #define SERVO_MOVE_DELAY_MS 1500
 
@@ -26,13 +23,28 @@
 ////////////////////////////////////////////////////////////////////////////////
 // METHOD DECLARATIONS.
 
+// Feeds the cat by running the servo.
 void feed();
+
+// Checks in with the server and updates variables.
 void check_in();
+
+// Sends a request to the server and returns the response.
+// Inner method for check_in().
 catfeeder_api_EmbeddedResponse sendRequest();
+
+// Waits the given amount of time and advances the time-tracking variables.
 void delayAndUpdateVariables(uint64_t delay_time_ms);
+
+// Advances the time-tracking variables by the given length of time.
 void updateVariables(uint64_t time_passed_ms);
-static bool arrayListOstreamWrite(pb_ostream_t *stream, const pb_byte_t *buf, size_t count);
+
+// Wraps the given ArrayList in a pb_ostream_t, allowing for ArrayList output
+// from proto decoding operations.
 pb_ostream_t arrayListToOstream(ArrayList<pb_byte_t>* list);
+
+// Callback used by arrayListToOstream().
+static bool arrayListOstreamWrite(pb_ostream_t *stream, const pb_byte_t *buf, size_t count);
 
 ////////////////////////////////////////////////////////////////////////////////
 // VARIABLES.
@@ -65,8 +77,11 @@ uint32_t scoops_to_feed = MINIMUM_SCOOPS_TO_FEED;
 
 void setup() {
   RGB.control(true);
+  RGB.brightness(255);
   pinMode(SERVO_PIN, OUTPUT);
 
+  // Retract the servo in case the device reset while the motor was running.
+  // TODO [V1]: stress test & deflake device power supply.
   analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
 }
 
@@ -88,23 +103,17 @@ void loop() {
 void feed() {
   // Dispense food.
   for (uint32_t i = 0; i < scoops_to_feed; i++) {
-    // TODO: go back to running the servos before final deploy.
-    // analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
-    for (int blink = 0; blink < 3; blink++) {
-      RGB.brightness(0);
-      delayAndUpdateVariables(500);
-      RGB.brightness(255);
-      delayAndUpdateVariables(500);
-    }
+    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
     delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
-    // analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
-    // delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
+    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+    delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
   }
 }
 
 void check_in() {
   catfeeder_api_EmbeddedResponse response = sendRequest();
   // Assume a request always takes 5s.
+  // TODO [V2]: actually measure the time that passes.
   updateVariables(/* time_passed_ms= */ 5000);
 
   scoops_to_feed = max(response.scoops_to_feed, MINIMUM_SCOOPS_TO_FEED);
@@ -114,27 +123,28 @@ void check_in() {
   }
   if (response.has_delay_until_next_feeding_ms) {
     delay_before_next_feeding_ms = response.delay_until_next_feeding_ms;
+    if (response.delay_until_next_feeding_ms == 0) {
+      feed_now = true;
+    }
   } else {
     delay_before_next_feeding_ms = 0;
     feed_now = false;
   }
 
-  // TODO: get schedule from server, use RTC to keep feeding even if server has
+  // TODO [V2]: get schedule from server, use RTC to keep feeding even if server has
   // extended outage.
 
-  // TODO [CLEANUP]: persist last schedule to nonvolatile storage so we can
+  // TODO [V2]: persist last schedule to nonvolatile storage so we can
   // keep feeding in case of server outage & device reset.
 }
 
 catfeeder_api_EmbeddedResponse sendRequest() {
-  catfeeder_api_EmbeddedResponse response = catfeeder_api_EmbeddedResponse_init_default;
-
   // Red while connecting.
   RGB.color(/* red = */ 255, /* green = */ 0, /* blue = */ 0);
   if (!httpClient.connect()) {
     // Could not connect to backend.
     httpClient.disconnect();
-    return response; // Default response.
+    return catfeeder_api_EmbeddedResponse_init_default;
   }
 
   // Orange while building and encoding request message into `requestBuffer`.
@@ -150,7 +160,7 @@ catfeeder_api_EmbeddedResponse sendRequest() {
   if (!pb_encode(&requestOstream, catfeeder_api_EmbeddedRequest_fields, &request)) {
     // Could not encode request.
     httpClient.disconnect();
-    return response; // Default response.
+    return catfeeder_api_EmbeddedResponse_init_default;
   }
 
   // Yellow while sending request.
@@ -168,20 +178,21 @@ catfeeder_api_EmbeddedResponse sendRequest() {
   if (status != HTTP_STATUS_OK) {
     // Connected to backend but got bad response. Orange.
     RGB.color(/* red = */ 252, /* green = */ 60, /* blue = */ 3);
-    return response; // Default response.
+    return catfeeder_api_EmbeddedResponse_init_default;
   }
 
   // Decode response into `response`.
   pb_istream_t stream = pb_istream_from_buffer(
       responseBuffer.data, responseBuffer.length);
+  catfeeder_api_EmbeddedResponse response = catfeeder_api_EmbeddedResponse_init_default;
   if (!pb_decode(&stream, catfeeder_api_EmbeddedResponse_fields, &response)) {
     // Got successful response from the server, but the body was malformed.
-    return response; // Default response.
+    return catfeeder_api_EmbeddedResponse_init_default;
   }
 
   // Violet when fetch & decode were both successful.
   RGB.color(/* red = */ 255, /* green = */ 0, /* blue = */ 255);
-  return response; // Actual response.
+  return response;
 }
 
 void delayAndUpdateVariables(uint64_t delay_time_ms) {
@@ -199,7 +210,7 @@ void updateVariables(uint64_t time_passed_ms) {
 
   if (delay_before_next_check_in_ms > time_passed_ms) {
     delay_before_next_check_in_ms -= time_passed_ms;
-  } else if (delay_before_next_check_in_ms > 0) {
+  } else {
     delay_before_next_check_in_ms = 0;
     check_in_now = true;
   }
@@ -210,8 +221,8 @@ void updateVariables(uint64_t time_passed_ms) {
 }
 
 static bool arrayListOstreamWrite(pb_ostream_t *stream, const pb_byte_t *buf, size_t count) {
+  // Add the provided bytes to the ArrayList.
   ArrayList<pb_byte_t>* list = (ArrayList<pb_byte_t>*)stream->state;
-
   for (size_t i = 0; i < count; i++) {
     if (!list->add(buf[i])) {
       return false;
@@ -225,7 +236,8 @@ pb_ostream_t arrayListToOstream(ArrayList<pb_byte_t>* list) {
     pb_ostream_t stream;
     stream.state = list;
     stream.callback = &arrayListOstreamWrite;
-    stream.max_size = 2000000000;  // Approx. maximum of int.
     stream.bytes_written = 0;
+    // Approx. maximum of int, which is the theoretical max capacity of ArrayLists.
+    stream.max_size = 2000000000;
     return stream;
 }

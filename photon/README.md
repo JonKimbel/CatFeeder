@@ -5,7 +5,12 @@ Before this code will compile, you will need to add a file named
 `backend-info.h` in this directory containing the following:
 
 ```
+#ifndef BACKEND_INFO_H
+#define BACKEND_INFO_H
+
 #define BACKEND_DOMAIN "<your backend's domain name, e.g. google.com>"
+
+#endif // BACKEND_INFO_H
 ```
 
 The .pb files are compiled protobufs. To change them, change the API definition

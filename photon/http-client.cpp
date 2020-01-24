@@ -31,7 +31,7 @@ void HttpClient::sendRequest() {
   sendRequest(&emptyBody);
 }
 
-// TODO: Add timeouts to TCP write/read calls.
+// TODO [V1]: Add timeouts to TCP write/read calls.
 
 void HttpClient::sendRequest(ArrayList<uint8_t>* body) {
   // Create the formatted strings for the HTTP request header.
