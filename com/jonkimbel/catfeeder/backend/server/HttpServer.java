@@ -59,17 +59,26 @@ public class HttpServer {
     } while (!lastLine.equals(""));
     HttpHeader requestHeader = HttpHeader.fromLines(headerLines);
 
-    // Read the request body.
-    // TODO: fix hang that happens here.
     // TODO: Handle "Transfer-Encoding: Chunked"?
     // https://greenbytes.de/tech/webdav/rfc7230.html#message.body.length
+
+    // Read the request body.
     String requestBody = "";
     if (requestHeader.contentLength != null && requestHeader.contentLength > 0) {
       char[] bodyBuffer = new char[requestHeader.contentLength];
-      while (!socket.isClosed() || in.ready()) {
-        in.read(bodyBuffer, /* off = */ 0, /* len = */ requestHeader.contentLength);
+      int bytesRead = 0;
+      while (bytesRead < requestHeader.contentLength && (!socket.isClosed() || in.ready())) {
+        bytesRead += in.read(
+            bodyBuffer,
+            /* off = */ bytesRead,
+            /* len = */ requestHeader.contentLength - bytesRead);
       }
-      requestBody = new String(bodyBuffer);
+      if (bytesRead == requestHeader.contentLength) {
+        requestBody = new String(bodyBuffer);
+      } else {
+        System.err.printf("%s - content length:%s but received %s bytes",
+            new Date(), requestHeader.contentLength, bytesRead);
+      }
     }
 
     System.out.printf("%s - request: %s %s\n", new Date(), requestHeader.method, requestHeader.path);
