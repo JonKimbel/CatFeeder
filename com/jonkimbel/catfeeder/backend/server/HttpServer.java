@@ -76,13 +76,12 @@ public class HttpServer {
       if (bytesRead == requestHeader.contentLength) {
         requestBody = new String(bodyBuffer);
       } else {
-        System.err.printf("%s - content length:%s but received %s bytes",
+        System.err.printf("%s - content length:%s but received %s bytes\n",
             new Date(), requestHeader.contentLength, bytesRead);
       }
     }
 
     System.out.printf("%s - request: %s %s\n", new Date(), requestHeader.method, requestHeader.path);
-    System.out.printf("%s - body: %s\n", new Date(), requestBody); // TODO [CLEANUP]: remove this.
 
     // Determine the response header & body.
     HttpResponse httpResponse = requestHandler.handleRequest(requestHeader, requestBody);

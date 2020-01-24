@@ -140,13 +140,10 @@ catfeeder_api_EmbeddedResponse sendRequest() {
   // Orange while building and encoding request message into `requestBuffer`.
   RGB.color(/* red = */ 252, /* green = */ 60, /* blue = */ 3);
   catfeeder_api_EmbeddedRequest request = catfeeder_api_EmbeddedRequest_init_default;
-  // TODO: revert after debugging.
-  request.has_time_since_last_feeding_ms = true;
-  request.time_since_last_feeding_ms = time_since_last_feeding_ms;
-//  if (has_fed) {
-//    request.has_time_since_last_feeding_ms = true;
-//    request.time_since_last_feeding_ms = time_since_last_feeding_ms;
-//  }
+  if (has_fed) {
+    request.has_time_since_last_feeding_ms = true;
+    request.time_since_last_feeding_ms = time_since_last_feeding_ms;
+  }
 
   ArrayList<uint8_t> requestBuffer;
   pb_ostream_t requestOstream = arrayListToOstream(&requestBuffer);

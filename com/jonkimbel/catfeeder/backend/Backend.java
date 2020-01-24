@@ -26,7 +26,7 @@ import java.util.*;
 public class Backend implements RequestHandler {
   private static final int PORT = 80;
   private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
-  private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10000; // 10 min. TODO: reset this.
+  private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10 * 60 * 1000; // 10 min.
   private static final long INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS = 60 * 1000; // 1 min.
   private static final int MIN_SCOOPS_PER_FEEDING = 1;
 
@@ -80,13 +80,17 @@ public class Backend implements RequestHandler {
           .build();
     } else if (requestHeader.path.startsWith("/photon")) {
       EmbeddedRequest request = EmbeddedRequest.parseFrom(requestBody.getBytes());
-      System.out.printf("%s - content length: %s\n", new Date(), requestHeader.contentLength);
-      System.out.printf("%s - time since last feeding: %s\n", new Date(),
-          request.hasTimeSinceLastFeedingMs() ? request.getTimeSinceLastFeedingMs() : "null");
 
-      PreferencesStorage.set(PreferencesStorage.get().toBuilder()
-          .setLastPhotonCheckInMsSinceEpoch(System.currentTimeMillis())
-          .build());
+      Preferences.Builder preferencesBuilder = PreferencesStorage.get().toBuilder()
+          .setLastPhotonCheckInMsSinceEpoch(System.currentTimeMillis());
+
+      if (request.hasTimeSinceLastFeedingMs()) {
+        preferencesBuilder.getFeedingPreferencesBuilder().setLastFeedingTimeMsSinceEpoch(
+            Instant.now().toEpochMilli() - request.getTimeSinceLastFeedingMs());
+      }
+
+      PreferencesStorage.set(preferencesBuilder.build());
+
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
           .setProtobufBody(getProtobufResponse())
