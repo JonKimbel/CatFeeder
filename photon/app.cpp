@@ -94,13 +94,22 @@ void loop() {
     has_fed = true;
   } else if (check_in_now) {
     check_in_now = false;
+    int time_before_check_in_s = Time.now();
     check_in();
-    // Assume a request always takes 5s.
-    // TODO [V2]: actually measure the time that passes.
-    updateVariables(/* time_passed_ms= */ 5000);
+    int time_to_check_in_s = max(Time.now() - time_before_check_in_s, 0);
+    updateVariables(/* time_passed_ms= */ time_to_check_in_s * 1000);
   } else {
     // If we're not feeding or checking in, we're waiting.
-    delayAndUpdateVariables(min(delay_before_next_feeding_ms, delay_before_next_check_in_ms));
+    if (delay_before_next_feeding_ms > 0
+        && delay_before_next_feeding_ms < delay_before_next_check_in_ms) {
+      delayAndUpdateVariables(delay_before_next_feeding_ms);
+    } else if (delay_before_next_check_in_ms > 0) {
+      delayAndUpdateVariables(delay_before_next_check_in_ms);
+    } else {
+      // We're in a bad state, so do an immediate check-in to fix it.
+      // Waiting for 0ms won't advance the time counters.
+      check_in_now = true;
+    }
   }
 }
 
