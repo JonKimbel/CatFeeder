@@ -14,8 +14,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS.
 
-// TODO [V1]: add a test button/switch.
-
 #define SERVO_MOVE_DELAY_MS 1500
 
 #define MINIMUM_SCOOPS_TO_FEED 1

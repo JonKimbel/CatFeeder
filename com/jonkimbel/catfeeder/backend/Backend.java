@@ -30,7 +30,7 @@ public class Backend implements RequestHandler {
   private static final long INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS = 60 * 1000; // 1 min.
   private static final int MIN_SCOOPS_PER_FEEDING = 1;
 
-  // TODO [V1]: find a way to kill the server gracefully so the embedded device isn't stuck trying
+  // TODO [V2]: find a way to kill the server gracefully so the embedded device isn't stuck trying
   // to transfer data. OR get the device to be resilient to such cases.
 
   private final int port;
@@ -81,7 +81,7 @@ public class Backend implements RequestHandler {
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
           .build();
     } else if (requestHeader.path.startsWith("/photon")) {
-      // TODO [V1]: split out into a separate method.
+      // TODO [V2]: split out into a separate method.
       EmbeddedRequest request = EmbeddedRequest.parseFrom(requestBody.getBytes());
 
       Preferences.Builder preferencesBuilder = PreferencesStorage.get().toBuilder()
