@@ -13,8 +13,8 @@ message EmbeddedRequest {
 message EmbeddedResponse {
   // How long to wait before making another request to the server, in milliseconds.
   // The default value will be used by the device when it's unable to contact the server.
-  // Optional. Absence of this field means the device will check in with the server again as soon as possible.
-  optional uint64 delay_until_next_check_in_ms = 1 [default = 60000];
+  // Optional.
+  optional uint64 delay_until_next_check_in_ms = 1 [default = 10000];
 
   // How long to wait before running the motor to feed that cat, in milliseconds.
   // Optional. Absence of this field means the cat will not be auto-fed.
