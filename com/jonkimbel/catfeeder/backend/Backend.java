@@ -5,7 +5,6 @@ import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPrefer
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences.FeedingSchedule;
 import com.jonkimbel.catfeeder.backend.server.*;
 import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
-import com.jonkimbel.catfeeder.proto.CatFeeder;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedRequest;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedResponse;
 import com.jonkimbel.catfeeder.backend.server.HttpServer.RequestHandler;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 // TODO [V3]: Add nullability tests.
@@ -26,8 +24,6 @@ import java.util.*;
 public class Backend implements RequestHandler {
   private static final int PORT = 80;
   private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
-  private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10 * 60 * 1000; // 10 min.
-  private static final long INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS = 60 * 1000; // 1 min.
   private static final int MIN_SCOOPS_PER_FEEDING = 1;
 
   // TODO [V2]: find a way to kill the server gracefully so the embedded device isn't stuck trying
@@ -96,8 +92,6 @@ public class Backend implements RequestHandler {
 
       PreferencesStorage.set(preferencesBuilder.build());
 
-      // TODO [V1]: account for poor photon time keeping, ensure we never over-feed due to a check
-      // in right after a slightly early feed.
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
           .setProtobufBody(getProtobufResponse())
@@ -110,21 +104,8 @@ public class Backend implements RequestHandler {
   private byte[] getProtobufResponse() {
     EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
 
-    @Nullable ZonedDateTime nextFeedingTime = Time.getTimeOfNextFeeding();
-    if (nextFeedingTime == null) {
-      response.setDelayUntilNextCheckInMs(INTERVAL_BETWEEN_CHECK_INS_MS);
-    } else {
-      long durationUntilNextFeedingMs =
-          nextFeedingTime.toInstant().toEpochMilli() - Instant.now().toEpochMilli();
-      response.setDelayUntilNextFeedingMs(durationUntilNextFeedingMs);
-
-      long durationUntilNextCheckInMs = INTERVAL_BETWEEN_CHECK_INS_MS;
-      while (Math.abs(durationUntilNextCheckInMs - durationUntilNextFeedingMs) <
-          INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS) {
-        durationUntilNextCheckInMs += INTERVAL_TO_GIVE_DEVICE_TO_COMPLETE_CHECK_IN_MS;
-      }
-      response.setDelayUntilNextCheckInMs(durationUntilNextCheckInMs);
-    }
+    response.setDelayUntilNextCheckInMs(Time.getTimeToNextCheckInMs());
+    response.setDelayUntilNextFeedingMs(Time.getTimeToNextFeedingMs());
 
     response.setScoopsToFeed(Math.max(
         PreferencesStorage.get().getFeedingPreferences().getNumberOfScoopsPerFeeding(),
@@ -193,31 +174,40 @@ public class Backend implements RequestHandler {
       return;
     }
 
-    builder
-        .setNumberOfScoopsPerFeeding(numberOfScoopsPerFeeding)
-        .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
+    builder.setNumberOfScoopsPerFeeding(numberOfScoopsPerFeeding);
   }
 
-  private static void updateFeedingSchedule(String feedingSchedule,
+  private static void updateFeedingSchedule(String feedingScheduleArgument,
       FeedingPreferences.Builder builder) {
-    if (feedingSchedule == null) {
+    if (feedingScheduleArgument == null) {
       return;
     }
 
-    if (feedingSchedule.equals("mornings")) {
-      builder
-          .setFeedingSchedule(FeedingSchedule.AUTO_FEED_IN_MORNINGS)
-          .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
-    } else if (feedingSchedule.equals("mornings_and_evenings")) {
-      builder
-          .setFeedingSchedule(FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS)
-          .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
-    } else if (feedingSchedule.equals("never")) {
-      builder
-          .setFeedingSchedule(FeedingSchedule.NEVER_AUTO_FEED)
-          .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
-    } else {
-      System.err.printf("%s - Unrecognized feeding schedule:%s\n", new Date(), feedingSchedule);
+    boolean scheduleRecognized =
+        applyFeedingSchedule(builder, feedingScheduleArgument,
+            "mornings", FeedingSchedule.AUTO_FEED_IN_MORNINGS);
+    scheduleRecognized |= applyFeedingSchedule(builder, feedingScheduleArgument,
+        "mornings_and_evenings",
+        FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS);
+    scheduleRecognized |= applyFeedingSchedule(builder, feedingScheduleArgument,
+        "never", FeedingSchedule.NEVER_AUTO_FEED);
+
+    if (!scheduleRecognized) {
+      System.err.printf("%s - Unrecognized feeding schedule:%s\n",
+          new Date(), feedingScheduleArgument);
     }
   }
+
+  private static boolean applyFeedingSchedule(FeedingPreferences.Builder builder,
+      String scheduleArgument, String candidateScheduleString, FeedingSchedule candidateSchedule) {
+    if (scheduleArgument.equals(candidateScheduleString)) {
+      if (builder.getFeedingSchedule() != candidateSchedule) {
+        builder.setFeedingSchedule(candidateSchedule)
+            .setLastFeedingScheduleChangeMsSinceEpoch(Instant.now().toEpochMilli());
+      }
+      return true;
+    }
+    return false;
+  }
+
 }

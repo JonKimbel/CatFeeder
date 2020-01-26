@@ -87,8 +87,8 @@ void loop() {
     feed_now = false;
     feed();
     time_since_last_feeding_ms = 0;
-    // TODO [V1]: check in immediately after feeding.
     has_fed = true;
+    check_in_now = true;
   } else if (check_in_now) {
     check_in_now = false;
     int time_before_check_in_s = Time.now();

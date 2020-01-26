@@ -10,6 +10,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class Time {
   private static final DateTimeFormatter TIME_FORMATTER =
@@ -17,6 +21,8 @@ public class Time {
   private static final ZoneId DEVICE_TIME_ZONE = ZoneId.of("US/Pacific");
   private static final int MORNING_TIME_MINUTES_INTO_DAY = 6 * 60; // 6AM.
   private static final int EVENING_TIME_MINUTES_INTO_DAY = 18 * 60; // 6PM.
+  private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10 * 60 * 1000; // 10 min.
+  private static final int MAX_PHOTON_TIME_SKEW_S = 30;
 
   // TODO [V3]: Implement support for user-defined device timezones.
   // TODO [V1]: Implement support for user-defined feeding times.
@@ -49,6 +55,17 @@ public class Time {
   }
 
   @Nullable
+  public static ZonedDateTime getTimeOfLastFeedingScheduleChange() {
+    if (PreferencesStorage.get().getFeedingPreferences().hasLastFeedingScheduleChangeMsSinceEpoch()) {
+      return ZonedDateTime.ofInstant(
+          Instant.ofEpochMilli(PreferencesStorage.get().getFeedingPreferences()
+              .getLastFeedingScheduleChangeMsSinceEpoch()),
+          DEVICE_TIME_ZONE);
+    }
+    return null;
+  }
+
+  @Nullable
   public static ZonedDateTime getTimeOfLastFeeding() {
     if (PreferencesStorage.get().getFeedingPreferences().hasLastFeedingTimeMsSinceEpoch()) {
       return ZonedDateTime.ofInstant(
@@ -61,38 +78,82 @@ public class Time {
 
   @Nullable
   public static ZonedDateTime getTimeOfNextFeeding() {
+    // TODO [V1]: add override feeding time when the user taps "feed now", clear this override once
+    // the photon has fed it.
+
     ZonedDateTime now = ZonedDateTime.now(DEVICE_TIME_ZONE);
-    ZonedDateTime morningToday = getTimeAtMinutesIntoToday(MORNING_TIME_MINUTES_INTO_DAY);
-    ZonedDateTime eveningToday = getTimeAtMinutesIntoToday(EVENING_TIME_MINUTES_INTO_DAY);
+    ZonedDateTime midnightThisMorning = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
+    ZonedDateTime morningToday = midnightThisMorning.plusMinutes(MORNING_TIME_MINUTES_INTO_DAY);
+    ZonedDateTime eveningToday = midnightThisMorning.plusMinutes(EVENING_TIME_MINUTES_INTO_DAY);
     ZonedDateTime morningTomorrow = morningToday.plusDays(1);
 
-    // TODO [V1]: use time of last feeding & last feeding schedule change to immediately feed if
-    // - we missed a feeding due to bad photon time keeping or daylight savings time
-    // - the schedule was changed since the photon last checked in
-    // - the user tapped "feed now"
+    // All of the feeding times we might need to feed. This list must remain in chronological order.
+    List<ZonedDateTime> upcomingFeedingTimes = new ArrayList<ZonedDateTime>();
 
     switch (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule()) {
       case AUTO_FEED_IN_MORNINGS:
-        if (morningToday.isAfter(now)) {
-          return morningToday;
-        } else {
-          return morningTomorrow;
-        }
+        upcomingFeedingTimes.add(morningToday);
+        upcomingFeedingTimes.add(morningTomorrow);
+        break;
       case AUTO_FEED_IN_MORNINGS_AND_EVENINGS:
-        if (morningToday.isAfter(now)) {
-          return morningToday;
-        } else if (eveningToday.isAfter(now)) {
-          return eveningToday;
-        }
-        return morningTomorrow;
+        upcomingFeedingTimes.add(morningToday);
+        upcomingFeedingTimes.add(eveningToday);
+        upcomingFeedingTimes.add(morningTomorrow);
+        break;
       default:
-        return null;
+        break;
     }
+
+    // TODO [V1]: ensure we don't miss a feeding or over-feed during daylight savings time changes.
+
+    @Nullable ZonedDateTime timeOfLastFeeding = getTimeOfLastFeeding();
+    @Nullable ZonedDateTime timeOfLastCheckIn = getTimeOfLastCheckIn();
+    @Nullable ZonedDateTime timeOfLastFeedingScheduleChange = getTimeOfLastFeedingScheduleChange();
+
+    for (ZonedDateTime upcomingFeedingTime : upcomingFeedingTimes) {
+      if (upcomingFeedingTime.isAfter(now)) {
+        if (timeOfLastFeeding != null
+            && timeOfLastFeeding.isAfter(
+                upcomingFeedingTime.minusSeconds(MAX_PHOTON_TIME_SKEW_S))) {
+          System.out.printf("%s - Skipped feeding at %s because the device *just* fed at %s",
+              new Date(), upcomingFeedingTime, timeOfLastFeeding);
+          continue;
+        }
+
+        // This is the first feeding the device hasn't done yet, feed it.
+        return upcomingFeedingTime;
+
+      } else if (timeOfLastFeeding != null
+          && upcomingFeedingTime.isAfter(now.minusSeconds(MAX_PHOTON_TIME_SKEW_S))
+          && timeOfLastFeeding.isBefore(now.minusSeconds(2 * MAX_PHOTON_TIME_SKEW_S))) {
+        System.out.printf("%s - Feeding immediately because the device last fed at %s and we " +
+            "were supposed to feed at %s", new Date(), timeOfLastFeeding, upcomingFeedingTime);
+        return now;
+
+      } else if (timeOfLastFeeding != null && timeOfLastCheckIn != null
+          && timeOfLastFeedingScheduleChange != null
+          && timeOfLastCheckIn.isBefore(timeOfLastFeedingScheduleChange)
+          && timeOfLastFeeding.isBefore(upcomingFeedingTime.minusSeconds(MAX_PHOTON_TIME_SKEW_S))) {
+        System.out.printf("%s - Feeding immediately because the device last fed at %s and last " +
+            "checked in at %s, but the schedule changed at %s and we were supposed to feed at %s",
+            new Date(), timeOfLastFeeding, timeOfLastCheckIn, timeOfLastFeedingScheduleChange,
+            upcomingFeedingTime);
+        return now;
+      }
+    }
+    return null;
   }
 
-  private static ZonedDateTime getTimeAtMinutesIntoToday(int minutes_into_day) {
-    return ZonedDateTime.now(DEVICE_TIME_ZONE)
-        .withHour(0).withMinute(0).withSecond(0).withNano(0)
-        .plusMinutes(minutes_into_day);
+  public static long getTimeToNextCheckInMs() {
+    return INTERVAL_BETWEEN_CHECK_INS_MS;
+  }
+
+  @Nullable
+  public static Long getTimeToNextFeedingMs() {
+    @Nullable ZonedDateTime nextFeedingTime = Time.getTimeOfNextFeeding();
+    if (nextFeedingTime == null) {
+      return null;
+    }
+    return Math.max(0, nextFeedingTime.toInstant().toEpochMilli() - Instant.now().toEpochMilli());
   }
 }
