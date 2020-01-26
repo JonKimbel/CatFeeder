@@ -9,8 +9,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Storage {
   public enum Item {
-    // TODO [V1]: switch this to "binarypb".
-    PREFERENCES("preferences.textpb", new PreferencesSerializer()),
+    PREFERENCES("preferences.binarypb", new PreferencesSerializer()),
     ;
 
     public final String filename;
