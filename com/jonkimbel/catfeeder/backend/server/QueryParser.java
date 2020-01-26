@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class QueryParser {
   public static Map<String, String> parseQuery(String query) {
-    // TODO [CLEANUP]: Make immutable map
+    // TODO [V3]: Make immutable map
     Map<String, String> keyValueMap = new HashMap<>();
 
     // Lowercase everything.

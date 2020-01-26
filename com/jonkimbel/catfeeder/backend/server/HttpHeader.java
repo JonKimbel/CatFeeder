@@ -42,7 +42,7 @@ public class HttpHeader {
       this.partNames = Arrays.asList(partNames);
     }
 
-    // TODO [CLEANUP]: replace with ImmutableList.
+    // TODO [V3]: replace with ImmutableList.
     @Nullable
     public String getPart(String lineInHeader, HeaderPart partName) {
       int partNameGroupNumber = partNames.indexOf(partName) + 1; // Regex groups are 1-based.
@@ -95,7 +95,7 @@ public class HttpHeader {
     this.transferEncoding = transferEncoding;
   }
 
-  // TODO [CLEANUP]: use AutoValue.
+  // TODO [V3]: use AutoValue.
   public static class Builder {
     private Http.Method method;
     private String path;

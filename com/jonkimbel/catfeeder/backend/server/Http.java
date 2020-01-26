@@ -40,7 +40,6 @@ public interface Http {
     GET,
     POST,
     UNKNOWN,
-
     ;
 
     public static Method fromString(String stringMethod) {

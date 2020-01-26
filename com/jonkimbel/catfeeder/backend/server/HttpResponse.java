@@ -1,6 +1,6 @@
 package com.jonkimbel.catfeeder.backend.server;
 
-// TODO [CLEANUP]: Make @AutoValue.
+// TODO [V3]: Make @AutoValue.
 
 public class HttpResponse {
   private final byte[] protobufBody;

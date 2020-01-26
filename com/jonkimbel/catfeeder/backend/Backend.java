@@ -20,8 +20,8 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.*;
 
-// TODO [V2]: Add nullability tests.
-// TODO [V2]: Add unit tests.
+// TODO [V3]: Add nullability tests.
+// TODO [V3]: Add unit tests.
 
 public class Backend implements RequestHandler {
   private static final int PORT = 80;
@@ -36,7 +36,7 @@ public class Backend implements RequestHandler {
   private final int port;
 
   public static void main(String[] args) throws IOException {
-    // TODO [V2]: take port as an argument.
+    // TODO [V3]: take port as an argument.
     new Backend(PORT).run();
   }
 
@@ -88,6 +88,8 @@ public class Backend implements RequestHandler {
           .setLastPhotonCheckInMsSinceEpoch(System.currentTimeMillis());
 
       if (request.hasTimeSinceLastFeedingMs()) {
+        // TODO [V1]: keep track of last ten feedings & display in UI - will need client to clear
+        // their memory on successful transmit.
         preferencesBuilder.getFeedingPreferencesBuilder().setLastFeedingTimeMsSinceEpoch(
             Instant.now().toEpochMilli() - request.getTimeSinceLastFeedingMs());
       }
@@ -104,8 +106,6 @@ public class Backend implements RequestHandler {
 
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
-
-  // TODO: continue scanning from here, then go through backend packages.
 
   private byte[] getProtobufResponse() {
     EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
@@ -134,7 +134,9 @@ public class Backend implements RequestHandler {
   }
 
   private String getHtmlResponse(String templatePath) throws IOException {
-    // TODO [V1]: Add passcode to web UI
+    // TODO [V1]: Add more time customization to web UI.
+
+    // TODO [V1]: Add passcode to web UI.
     // Oauth? Probably not allowed over HTTP, but worth investigation.
     // See this info on cookie protocol:
     // https://stackoverflow.com/questions/3467114/how-are-cookies-passed-in-the-http-protocol

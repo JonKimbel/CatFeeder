@@ -9,6 +9,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Storage {
   public enum Item {
+    // TODO [V1]: switch this to "binarypb".
     PREFERENCES("preferences.textpb", new PreferencesSerializer()),
     ;
 
@@ -50,8 +51,8 @@ public class Storage {
     return itemFromDisk;
   }
 
-  // TODO [CLEANUP]: synchronize to avoid race conditions
-  // TODO [CLEANUP]: write to disk on background thread
+  // TODO [V3]: synchronize to avoid race conditions
+  // TODO [V3]: write to disk on background thread
 
   public void setItemBlocking(Item item, Object value) {
     cache.put(item, value);

@@ -18,8 +18,8 @@ public class Time {
   private static final int MORNING_TIME_MINUTES_INTO_DAY = 6 * 60; // 6AM.
   private static final int EVENING_TIME_MINUTES_INTO_DAY = 18 * 60; // 6PM.
 
-  // TODO [CLEANUP]: Implement support for user-defined device timezones.
-  // TODO [CLEANUP]: Implement support for user-defined feeding times.
+  // TODO [V3]: Implement support for user-defined device timezones.
+  // TODO [V1]: Implement support for user-defined feeding times.
 
   public static String format(@Nullable ZonedDateTime time) {
     if (time == null) {
@@ -65,6 +65,11 @@ public class Time {
     ZonedDateTime morningToday = getTimeAtMinutesIntoToday(MORNING_TIME_MINUTES_INTO_DAY);
     ZonedDateTime eveningToday = getTimeAtMinutesIntoToday(EVENING_TIME_MINUTES_INTO_DAY);
     ZonedDateTime morningTomorrow = morningToday.plusDays(1);
+
+    // TODO [V1]: use time of last feeding & last feeding schedule change to immediately feed if
+    // - we missed a feeding due to bad photon time keeping or daylight savings time
+    // - the schedule was changed since the photon last checked in
+    // - the user tapped "feed now"
 
     switch (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule()) {
       case AUTO_FEED_IN_MORNINGS:

@@ -51,6 +51,7 @@ public class HttpServer {
 
   private void handle(BufferedReader in, PrintWriter printOut, BufferedOutputStream bytesOut) throws IOException {
     // Read the request header.
+    // TODO [V2]: Make this a separate method.
     List<String> headerLines = new ArrayList<>();
     String lastLine = "";
     do {
@@ -59,10 +60,11 @@ public class HttpServer {
     } while (!lastLine.equals(""));
     HttpHeader requestHeader = HttpHeader.fromLines(headerLines);
 
-    // TODO: Handle "Transfer-Encoding: Chunked"?
+    // TODO [V3]: Handle "Transfer-Encoding: Chunked"?
     // https://greenbytes.de/tech/webdav/rfc7230.html#message.body.length
 
     // Read the request body.
+    // TODO [V2]: Make this a separate method.
     String requestBody = "";
     if (requestHeader.contentLength != null && requestHeader.contentLength > 0) {
       char[] bodyBuffer = new char[requestHeader.contentLength];

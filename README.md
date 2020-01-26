@@ -2,6 +2,13 @@
 
 Feeds cat.
 
+## Project Status
+
+*   V1 - MVP, reliable auto-feeder. 85% complete.
+*   V2 - fancier & more robust auto-feeder with camera, cleaner code.
+    Not started.
+*   V3 - very clean & robust code. Not planned.
+
 ## Setup
 
 Run the following from this directory to set up the pre-commit checks.
