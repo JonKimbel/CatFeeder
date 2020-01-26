@@ -81,7 +81,6 @@ void setup() {
   pinMode(SERVO_PIN, OUTPUT);
 
   // Retract the servo in case the device reset while the motor was running.
-  // TODO [V1]: stress test & deflake device power supply.
   analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
 }
 
