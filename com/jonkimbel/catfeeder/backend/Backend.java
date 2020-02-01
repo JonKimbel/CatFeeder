@@ -80,29 +80,32 @@ public class Backend implements RequestHandler {
       Preferences.Builder preferencesBuilder = PreferencesStorage.get().toBuilder()
           .setLastPhotonCheckInMsSinceEpoch(System.currentTimeMillis());
 
+      boolean wroteLastFeedingTime = false;
       if (request.hasTimeSinceLastFeedingMs()) {
         // TODO [V1]: keep track of last ten feedings & display in UI - will need client to clear
         // their memory on successful transmit.
         preferencesBuilder.getFeedingPreferencesBuilder().setLastFeedingTimeMsSinceEpoch(
             Instant.now().toEpochMilli() - request.getTimeSinceLastFeedingMs());
+        wroteLastFeedingTime = true;
       }
 
       PreferencesStorage.set(preferencesBuilder.build());
 
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setProtobufBody(getProtobufResponse())
+          .setProtobufBody(getProtobufResponse(/* wroteLastFeedingTime = */ wroteLastFeedingTime))
           .build();
     }
 
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
 
-  private byte[] getProtobufResponse() {
+  private byte[] getProtobufResponse(boolean wroteLastFeedingTime) {
     EmbeddedResponse.Builder response = EmbeddedResponse.newBuilder();
 
     response.setDelayUntilNextCheckInMs(Time.getTimeToNextCheckInMs());
     response.setDelayUntilNextFeedingMs(Time.getTimeToNextFeedingMs());
+    response.setLastFeedingTimeConsumed(wroteLastFeedingTime);
 
     response.setScoopsToFeed(Math.max(
         PreferencesStorage.get().getFeedingPreferences().getNumberOfScoopsPerFeeding(),

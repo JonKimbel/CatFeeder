@@ -137,6 +137,11 @@ void check_in() {
     delay_before_next_feeding_ms = 0;
     feed_now = false;
   }
+  if (response.last_feeding_time_consumed) {
+    // Forget about the last feeding so we don't tell the server again.
+    time_since_last_feeding_ms = 0;
+    has_fed = false;
+  }
 
   // TODO [V2]: get schedule from server, use RTC to keep feeding even if server has
   // extended outage.

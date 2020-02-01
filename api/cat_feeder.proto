@@ -23,4 +23,8 @@ message EmbeddedResponse {
   // How many scoops to feed at each feeding.
   // Optional. Absence or 0 will result in one scoop being fed.
   optional uint32 scoops_to_feed = 3;
+
+  // Whether the device should stop reporting the feeding it just told the server about.
+  // Optional. Absence means the device will continue reporting the feeding it just reported.
+  optional bool last_feeding_time_consumed = 4;
 }
