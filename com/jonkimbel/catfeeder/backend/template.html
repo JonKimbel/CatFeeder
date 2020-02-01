@@ -29,7 +29,7 @@
         <li class="w3-padding">Next feeding time: {{next_feeding}}</li>
       </ul>
 
-      <form action="/write" method="get" class="w3-padding w3-black">
+      <form action="/" method="post" enctype="text/plain" class="w3-padding w3-black">
         <p>Update feeding schedule:</p>
 
         <input type="radio" class="w3-radio" name="feed_schedule" value="mornings"

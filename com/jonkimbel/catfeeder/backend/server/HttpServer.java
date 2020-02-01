@@ -91,12 +91,12 @@ public class HttpServer {
 
     // Write the response header & body.
     if (httpResponse.isBodyHtml()) {
-      writeHeader(printOut, httpResponse.getResponseCode(), Http.ContentType.HTML,
+      writeHeader(printOut, httpResponse, Http.ContentType.HTML,
           /* contentLength = */ httpResponse.getHtmlBody().length());
       printOut.print(httpResponse.getHtmlBody());
       printOut.flush();
     } else {
-      writeHeader(printOut, httpResponse.getResponseCode(), Http.ContentType.PROTOCOL_BUFFER,
+      writeHeader(printOut, httpResponse, Http.ContentType.PROTOCOL_BUFFER,
           /* contentLength = */ httpResponse.getProtobufBody().length);
       bytesOut.write(httpResponse.getProtobufBody(), /* offset = */ 0,
           /* length = */ httpResponse.getProtobufBody().length);
@@ -104,12 +104,15 @@ public class HttpServer {
     }
   }
 
-  private static void writeHeader(PrintWriter printWriter, Http.ResponseCode responseCode,
+  private static void writeHeader(PrintWriter printWriter, HttpResponse response,
       Http.ContentType contentType, int contentLength) {
     // NOTE: we need to use CRLF (\r\n or println) instead of just \n.
     // HTTP/1.1 spec dictates that CRLF be used to end lines in the HTTP response header.
-    printWriter.printf("HTTP/1.1 %s\r\n", responseCode);
+    printWriter.printf("HTTP/1.1 %s\r\n", response.getResponseCode());
     printWriter.println("Server: JonKimbel/CatFeeder HttpServer");
+    if (response.getLocationUrl() != null) {
+      printWriter.printf("Location: %s\r\n", response.getLocationUrl());
+    }
     printWriter.printf("Date: %s\r\n", new Date());
     printWriter.printf("Content-type: %s\r\n", contentType);
     printWriter.printf("Content-length: %d\r\n", contentLength);

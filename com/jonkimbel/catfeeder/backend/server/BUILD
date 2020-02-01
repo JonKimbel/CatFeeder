@@ -16,6 +16,6 @@ java_library(
 java_library(
     name = "query_parser",
     srcs = [
-        "QueryParser.java",
+        "MapParser.java",
     ],
 )

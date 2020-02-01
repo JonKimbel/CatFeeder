@@ -54,24 +54,21 @@ public class Backend implements RequestHandler {
   public HttpResponse handleRequest(HttpHeader requestHeader, String requestBody)
       throws IOException {
     HttpResponse.Builder responseBuilder = HttpResponse.builder();
+    boolean isFormInput =
+        requestHeader.path.equals("/") && requestHeader.method == Http.Method.POST;
 
-    if (requestHeader.method != Http.Method.GET) {
+    if (requestHeader.method != Http.Method.GET && !isFormInput) {
       return responseBuilder.setResponseCode(Http.ResponseCode.NOT_IMPLEMENTED).build();
     }
 
-    if (requestHeader.path.equals("/")) {
+    if (isFormInput) {
+      updateFeedingPreferences(MapParser.parsePostBody(requestBody));
       return responseBuilder
-          .setResponseCode(Http.ResponseCode.OK)
-          .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
+          .setResponseCode(Http.ResponseCode.FOUND)
+          .setLocation("/")
           .build();
-    } else if (requestHeader.path.startsWith("/write?")) {
-      // TODO [V1]: switch from GET to POST for this, it results in weird re-sending behavior when
-      //  you refresh the page. Or maybe redirect to "/"?
-      Map<String, String> queryKeysAndValues = QueryParser.parseQuery(requestHeader.path);
-      updateFeedingPreferences(queryKeysAndValues);
-
+    } else if (requestHeader.path.equals("/")) {
       // TODO [V1]: add a "feed now" button.
-
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
