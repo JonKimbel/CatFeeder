@@ -104,7 +104,7 @@ public class Time {
         break;
     }
 
-    // TODO [V1]: ensure we don't miss a feeding or over-feed during daylight savings time changes.
+    // TODO [V2]: ensure we don't miss a feeding or over-feed during daylight savings time changes.
 
     @Nullable ZonedDateTime timeOfLastFeeding = getTimeOfLastFeeding();
     @Nullable ZonedDateTime timeOfLastCheckIn = getTimeOfLastCheckIn();
