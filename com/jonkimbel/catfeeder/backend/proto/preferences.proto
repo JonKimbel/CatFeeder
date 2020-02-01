@@ -14,6 +14,8 @@ message Preferences {
 }
 
 message FeedingPreferences {
+  reserved 2;
+
   enum FeedingSchedule {
     UNKNOWN_FEEDING_SCHEDULE = 0;
     NEVER_AUTO_FEED = 1;
@@ -29,9 +31,9 @@ message FeedingPreferences {
   // Optional. Absence or value less than one will result in one scoop being fed.
   optional int32 number_of_scoops_per_feeding = 4;
 
-  // The time at which the cat was last auto-fed.
+  // The last ten times at which the cat was last auto-fed, from most recent to least recent.
   // Optional. Absence means the cat has never been fed.
-  optional uint64 last_feeding_time_ms_since_epoch = 2;
+  repeated uint64 last_ten_feeding_times_ms_since_epoch = 5;
 
   // The time at which the cat's feeding schedule was last changed.
   // Optional. Absence means the cat's feeding schedule has never changed.

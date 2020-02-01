@@ -82,10 +82,16 @@ public class Backend implements RequestHandler {
 
       boolean wroteLastFeedingTime = false;
       if (request.hasTimeSinceLastFeedingMs()) {
-        // TODO [V1]: keep track of last ten feedings & display in UI - will need client to clear
-        // their memory on successful transmit.
-        preferencesBuilder.getFeedingPreferencesBuilder().setLastFeedingTimeMsSinceEpoch(
-            Instant.now().toEpochMilli() - request.getTimeSinceLastFeedingMs());
+        List<Long> feedingHistory = new ArrayList<>(
+            preferencesBuilder.getFeedingPreferencesBuilder().getLastTenFeedingTimesMsSinceEpochList());
+        while (feedingHistory.size() >= 10) {
+          feedingHistory.remove(9);
+        }
+        feedingHistory.add(0, Instant.now().toEpochMilli() - request.getTimeSinceLastFeedingMs());
+
+        preferencesBuilder.getFeedingPreferencesBuilder()
+            .clearLastTenFeedingTimesMsSinceEpoch()
+            .addAllLastTenFeedingTimesMsSinceEpoch(feedingHistory);
         wroteLastFeedingTime = true;
       }
 
@@ -115,6 +121,8 @@ public class Backend implements RequestHandler {
   }
 
   private String getHtmlResponse(String templatePath) throws IOException {
+    // TODO [V1]: Show time of last ten feedings in web UI.
+
     // TODO [V1]: Add more time customization to web UI.
 
     // TODO [V1]: Add passcode to web UI.
@@ -125,11 +133,12 @@ public class Backend implements RequestHandler {
     String template = new String(getClass().getResourceAsStream(templatePath).readAllBytes(),
         StandardCharsets.UTF_8);
     Map<String, String> templateValues = new HashMap<>();
+    FeedingPreferences feedingPrefs = PreferencesStorage.get().getFeedingPreferences();
 
     templateValues.put("last_feeding", Time.format(Time.getTimeOfLastFeeding()));
     templateValues.put("next_feeding", Time.format(Time.getTimeOfNextFeeding()));
     int scoopsPerFeeding = Math.max(
-        PreferencesStorage.get().getFeedingPreferences().getNumberOfScoopsPerFeeding(),
+        feedingPrefs.getNumberOfScoopsPerFeeding(),
         MIN_SCOOPS_PER_FEEDING);
     templateValues.put("number_of_scoops_per_feeding", String.valueOf(scoopsPerFeeding));
 
@@ -137,10 +146,9 @@ public class Backend implements RequestHandler {
         Time.wasLastCheckInRecent() ? "none" : "inherit");
     templateValues.put("check_in_warning_time", Time.format(Time.getTimeOfLastCheckIn()));
 
-    if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
-        FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
+    if (feedingPrefs.getFeedingSchedule() == FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
       templateValues.put("feed_schedule_mornings", "checked");
-    } else if (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule() ==
+    } else if (feedingPrefs.getFeedingSchedule() ==
         FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS) {
       templateValues.put("feed_schedule_mornings_and_evenings", "checked");
     } else {

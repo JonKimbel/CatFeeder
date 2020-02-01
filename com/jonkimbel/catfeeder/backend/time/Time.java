@@ -1,5 +1,7 @@
 package com.jonkimbel.catfeeder.backend.time;
 
+import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass;
+import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences;
 import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -56,10 +58,10 @@ public class Time {
 
   @Nullable
   public static ZonedDateTime getTimeOfLastFeedingScheduleChange() {
-    if (PreferencesStorage.get().getFeedingPreferences().hasLastFeedingScheduleChangeMsSinceEpoch()) {
+    FeedingPreferences feedingPrefs = PreferencesStorage.get().getFeedingPreferences();
+    if (feedingPrefs.hasLastFeedingScheduleChangeMsSinceEpoch()) {
       return ZonedDateTime.ofInstant(
-          Instant.ofEpochMilli(PreferencesStorage.get().getFeedingPreferences()
-              .getLastFeedingScheduleChangeMsSinceEpoch()),
+          Instant.ofEpochMilli(feedingPrefs.getLastFeedingScheduleChangeMsSinceEpoch()),
           DEVICE_TIME_ZONE);
     }
     return null;
@@ -67,10 +69,10 @@ public class Time {
 
   @Nullable
   public static ZonedDateTime getTimeOfLastFeeding() {
-    if (PreferencesStorage.get().getFeedingPreferences().hasLastFeedingTimeMsSinceEpoch()) {
+    FeedingPreferences feedingPrefs = PreferencesStorage.get().getFeedingPreferences();
+    if (feedingPrefs.getLastTenFeedingTimesMsSinceEpochCount() > 0) {
       return ZonedDateTime.ofInstant(
-          Instant.ofEpochMilli(
-              PreferencesStorage.get().getFeedingPreferences().getLastFeedingTimeMsSinceEpoch()),
+          Instant.ofEpochMilli(feedingPrefs.getLastTenFeedingTimesMsSinceEpoch(0)),
           DEVICE_TIME_ZONE);
     }
     return null;
