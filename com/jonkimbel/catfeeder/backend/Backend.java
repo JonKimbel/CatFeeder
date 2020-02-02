@@ -25,6 +25,7 @@ public class Backend implements RequestHandler {
   private static final int PORT = 80;
   private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
   private static final int MIN_SCOOPS_PER_FEEDING = 1;
+  private static final int MAX_FEEDINGS_TO_DISPLAY = 3;
 
   // TODO [V2]: find a way to kill the server gracefully so the embedded device isn't stuck trying
   // to transfer data. OR get the device to be resilient to such cases.
@@ -133,14 +134,14 @@ public class Backend implements RequestHandler {
     Map<String, String> templateValues = new HashMap<>();
     FeedingPreferences feedingPrefs = PreferencesStorage.get().getFeedingPreferences();
 
-    // Show last three feedings.
+    // Show recent feedings.
     int feedingsCount = feedingPrefs.getLastTenFeedingTimesMsSinceEpochCount();
     if (feedingsCount == 0) {
       templateValues.put("recent_feedings_display", "none");
     } else {
       templateValues.put("recent_feedings_display", "inherit");
       StringBuilder feedingTimeString = new StringBuilder();
-      for (int i = 0; i < Math.min(feedingsCount, 3); i++) {
+      for (int i = 0; i < Math.min(feedingsCount, MAX_FEEDINGS_TO_DISPLAY); i++) {
         feedingTimeString.append(
             Time.format(Time.fromUnixMillis(feedingPrefs.getLastTenFeedingTimesMsSinceEpoch(i))));
         feedingTimeString.append("<br>");
