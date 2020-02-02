@@ -46,12 +46,16 @@ public class Time {
     return lastCheckInDate.isAfter(fifteenMinutesAgo);
   }
 
+  public static ZonedDateTime fromUnixMillis(long unixMillis) {
+    return ZonedDateTime.ofInstant(
+        Instant.ofEpochMilli(unixMillis),
+        DEVICE_TIME_ZONE);
+  }
+
   @Nullable
   public static ZonedDateTime getTimeOfLastCheckIn() {
     if (PreferencesStorage.get().hasLastPhotonCheckInMsSinceEpoch()) {
-      return ZonedDateTime.ofInstant(
-          Instant.ofEpochMilli(PreferencesStorage.get().getLastPhotonCheckInMsSinceEpoch()),
-          DEVICE_TIME_ZONE);
+      return fromUnixMillis(PreferencesStorage.get().getLastPhotonCheckInMsSinceEpoch());
     }
     return null;
   }
@@ -60,9 +64,7 @@ public class Time {
   public static ZonedDateTime getTimeOfLastFeedingScheduleChange() {
     FeedingPreferences feedingPrefs = PreferencesStorage.get().getFeedingPreferences();
     if (feedingPrefs.hasLastFeedingScheduleChangeMsSinceEpoch()) {
-      return ZonedDateTime.ofInstant(
-          Instant.ofEpochMilli(feedingPrefs.getLastFeedingScheduleChangeMsSinceEpoch()),
-          DEVICE_TIME_ZONE);
+      return fromUnixMillis(feedingPrefs.getLastFeedingScheduleChangeMsSinceEpoch());
     }
     return null;
   }
@@ -71,9 +73,7 @@ public class Time {
   public static ZonedDateTime getTimeOfLastFeeding() {
     FeedingPreferences feedingPrefs = PreferencesStorage.get().getFeedingPreferences();
     if (feedingPrefs.getLastTenFeedingTimesMsSinceEpochCount() > 0) {
-      return ZonedDateTime.ofInstant(
-          Instant.ofEpochMilli(feedingPrefs.getLastTenFeedingTimesMsSinceEpoch(0)),
-          DEVICE_TIME_ZONE);
+      return fromUnixMillis(feedingPrefs.getLastTenFeedingTimesMsSinceEpoch(0));
     }
     return null;
   }

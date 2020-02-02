@@ -24,13 +24,17 @@
         <p></p>
       </div>
 
-      <ul class="w3-ul w3-border w3-black">
-        <li class="w3-padding">Last feeding time: {{last_feeding}}</li>
-        <li class="w3-padding">Next feeding time: {{next_feeding}}</li>
-      </ul>
+      <div class="w3-black w3-padding w3-border">
+        Next feeding time: {{next_feeding}}
+      </div>
+
+      <div class="w3-black w3-padding w3-border" style="display: {{recent_feedings_display}}">
+        Recent feedings:<br>
+        {{recent_feedings}}
+      </div>
 
       <form action="/" method="post" enctype="text/plain" class="w3-padding w3-black">
-        <p>Update feeding schedule:</p>
+        Update feeding schedule:<br>
 
         <input type="radio" class="w3-radio" name="feed_schedule" value="mornings"
             {{feed_schedule_mornings}}>
@@ -44,13 +48,13 @@
                {{feed_schedule_never}}>
         <span class="w3-text-cyan">Never auto-feed</span><br>
 
-        <p></p>
+        <br>
 
         <span class="w3-text-cyan">Number of scoops per feeding: </span>
         <input type="number" class="w3-input" name="number_of_scoops_per_feeding" min="1"
             value="{{number_of_scoops_per_feeding}}">
 
-        <p><p>
+        <br>
 
         <input class="w3-button w3-white w3-hover-cyan" type="submit" value="Submit">
       </form>

@@ -121,8 +121,6 @@ public class Backend implements RequestHandler {
   }
 
   private String getHtmlResponse(String templatePath) throws IOException {
-    // TODO [V1]: Show time of last ten feedings in web UI.
-
     // TODO [V1]: Add more time customization to web UI.
 
     // TODO [V1]: Add passcode to web UI.
@@ -135,7 +133,21 @@ public class Backend implements RequestHandler {
     Map<String, String> templateValues = new HashMap<>();
     FeedingPreferences feedingPrefs = PreferencesStorage.get().getFeedingPreferences();
 
-    templateValues.put("last_feeding", Time.format(Time.getTimeOfLastFeeding()));
+    // Show last three feedings.
+    int feedingsCount = feedingPrefs.getLastTenFeedingTimesMsSinceEpochCount();
+    if (feedingsCount == 0) {
+      templateValues.put("recent_feedings_display", "none");
+    } else {
+      templateValues.put("recent_feedings_display", "inherit");
+      StringBuilder feedingTimeString = new StringBuilder();
+      for (int i = 0; i < Math.min(feedingsCount, 3); i++) {
+        feedingTimeString.append(
+            Time.format(Time.fromUnixMillis(feedingPrefs.getLastTenFeedingTimesMsSinceEpoch(i))));
+        feedingTimeString.append("<br>");
+      }
+      templateValues.put("recent_feedings", feedingTimeString.toString());
+    }
+
     templateValues.put("next_feeding", Time.format(Time.getTimeOfNextFeeding()));
     int scoopsPerFeeding = Math.max(
         feedingPrefs.getNumberOfScoopsPerFeeding(),
