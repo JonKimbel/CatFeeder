@@ -144,10 +144,10 @@ void check_in() {
   }
 
   // TODO [V2]: get schedule from server, use RTC to keep feeding even if server has
-  // extended outage.
+  //            extended outage.
 
   // TODO [V2]: persist last schedule to nonvolatile storage so we can
-  // keep feeding in case of server outage & device reset.
+  //            keep feeding in case of server outage & device reset.
 }
 
 catfeeder_api_EmbeddedResponse sendRequest() {

@@ -17,7 +17,7 @@ public class MapParser {
 
   private static Map<String, String> parse(String query, String pairDelimiterRegex,
       String keyValueDelimiterRegex) {
-    // TODO [V3]: Make immutable map
+    // TODO [V3]: Make immutable map.
     Map<String, String> keyValueMap = new HashMap<>();
 
     // Lowercase everything.

@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 // TODO [V2]: make HttpResponse use HttpHeader instead of rolling its own stringly-typed
-// representations.
+//            representations.
 
 public class HttpHeader {
   public final Http.Method method;

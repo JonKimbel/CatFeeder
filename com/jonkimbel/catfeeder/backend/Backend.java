@@ -28,7 +28,7 @@ public class Backend implements RequestHandler {
   private static final int MAX_FEEDINGS_TO_DISPLAY = 3;
 
   // TODO [V2]: find a way to kill the server gracefully so the embedded device isn't stuck trying
-  // to transfer data. OR get the device to be resilient to such cases.
+  //            to transfer data. OR get the device to be resilient to such cases.
 
   private final int port;
 
@@ -51,6 +51,8 @@ public class Backend implements RequestHandler {
     }
   }
 
+  // TODO [V1]: Refactor into multiple classes.
+
   @Override
   public HttpResponse handleRequest(HttpHeader requestHeader, String requestBody)
       throws IOException {
@@ -69,7 +71,8 @@ public class Backend implements RequestHandler {
           .setLocation("/")
           .build();
     } else if (requestHeader.path.equals("/")) {
-      // TODO [V1]: add a "feed now" button.
+      // TODO [V2]: add a "feed now" button. Override the next feeding time when the user taps
+      //            "feed now", clear this override once the photon has fed.
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
           .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
@@ -122,7 +125,8 @@ public class Backend implements RequestHandler {
   }
 
   private String getHtmlResponse(String templatePath) throws IOException {
-    // TODO [V1]: Add more time customization to web UI.
+    // TODO [V1]: Implement support for user-defined feeding times - just take a # of scoops and a
+    //            time per feeding, pace the feedings out automatically.
 
     // TODO [V1]: Add passcode to web UI.
     // Oauth? Probably not allowed over HTTP, but worth investigation.

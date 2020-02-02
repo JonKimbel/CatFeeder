@@ -27,7 +27,6 @@ public class Time {
   private static final int MAX_PHOTON_TIME_SKEW_S = 30;
 
   // TODO [V3]: Implement support for user-defined device timezones.
-  // TODO [V1]: Implement support for user-defined feeding times.
 
   public static String format(@Nullable ZonedDateTime time) {
     if (time == null) {
@@ -80,9 +79,6 @@ public class Time {
 
   @Nullable
   public static ZonedDateTime getTimeOfNextFeeding() {
-    // TODO [V1]: add override feeding time when the user taps "feed now", clear this override once
-    // the photon has fed it.
-
     ZonedDateTime now = ZonedDateTime.now(DEVICE_TIME_ZONE);
     ZonedDateTime midnightThisMorning = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
     ZonedDateTime morningToday = midnightThisMorning.plusMinutes(MORNING_TIME_MINUTES_INTO_DAY);

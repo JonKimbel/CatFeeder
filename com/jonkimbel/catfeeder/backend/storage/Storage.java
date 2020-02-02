@@ -50,8 +50,8 @@ public class Storage {
     return itemFromDisk;
   }
 
-  // TODO [V3]: synchronize to avoid race conditions
-  // TODO [V3]: write to disk on background thread
+  // TODO [V3]: synchronize to avoid race conditions.
+  // TODO [V3]: write to disk on background thread.
 
   public void setItemBlocking(Item item, Object value) {
     cache.put(item, value);
