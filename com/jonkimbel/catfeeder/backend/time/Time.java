@@ -105,7 +105,6 @@ public class Time {
     // TODO [V2]: ensure we don't miss a feeding or over-feed during daylight savings time changes.
 
     @Nullable ZonedDateTime timeOfLastFeeding = getTimeOfLastFeeding();
-    @Nullable ZonedDateTime timeOfLastCheckIn = getTimeOfLastCheckIn();
     @Nullable ZonedDateTime timeOfLastFeedingScheduleChange = getTimeOfLastFeedingScheduleChange();
 
     for (ZonedDateTime upcomingFeedingTime : upcomingFeedingTimes) {
@@ -113,7 +112,7 @@ public class Time {
         if (timeOfLastFeeding != null
             && timeOfLastFeeding.isAfter(
                 upcomingFeedingTime.minusSeconds(MAX_PHOTON_TIME_SKEW_S))) {
-          System.out.printf("%s - Skipped feeding at %s because the device *just* fed at %s",
+          System.out.printf("%s - Skipped feeding at %s because the device *just* fed at %s\n",
               new Date(), upcomingFeedingTime, timeOfLastFeeding);
           continue;
         }
@@ -122,20 +121,11 @@ public class Time {
         return upcomingFeedingTime;
 
       } else if (timeOfLastFeeding != null
-          && upcomingFeedingTime.isAfter(now.minusSeconds(MAX_PHOTON_TIME_SKEW_S))
-          && timeOfLastFeeding.isBefore(now.minusSeconds(2 * MAX_PHOTON_TIME_SKEW_S))) {
-        System.out.printf("%s - Feeding immediately because the device last fed at %s and we " +
-            "were supposed to feed at %s", new Date(), timeOfLastFeeding, upcomingFeedingTime);
-        return now;
-
-      } else if (timeOfLastFeeding != null && timeOfLastCheckIn != null
           && timeOfLastFeedingScheduleChange != null
-          && timeOfLastCheckIn.isBefore(timeOfLastFeedingScheduleChange)
+          && timeOfLastFeedingScheduleChange.isBefore(upcomingFeedingTime)
           && timeOfLastFeeding.isBefore(upcomingFeedingTime.minusSeconds(MAX_PHOTON_TIME_SKEW_S))) {
-        System.out.printf("%s - Feeding immediately because the device last fed at %s and last " +
-            "checked in at %s, but the schedule changed at %s and we were supposed to feed at %s",
-            new Date(), timeOfLastFeeding, timeOfLastCheckIn, timeOfLastFeedingScheduleChange,
-            upcomingFeedingTime);
+        System.out.printf("%s - Feeding immediately because the device last fed at %s and we " +
+            "were supposed to feed at %s\n", new Date(), timeOfLastFeeding, upcomingFeedingTime);
         return now;
       }
     }
