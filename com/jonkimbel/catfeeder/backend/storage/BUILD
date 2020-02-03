@@ -1,3 +1,5 @@
+# This package contains classes for storing information in a non-volatile way (backed up by disk).
+
 package(default_visibility = ["//com/jonkimbel/catfeeder/backend:__subpackages__"])
 
 java_library(

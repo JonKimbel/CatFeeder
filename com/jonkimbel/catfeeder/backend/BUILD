@@ -1,4 +1,8 @@
-# This is a Bazel BUILD file. Reference: https://docs.bazel.build/versions/master/be/java.html
+# This package contains the backend for CatFeeder, a device which automatically feeds a cat.
+#
+# In addition to communicating with the embedded device via encoded protobuf, it also renders an HTML webpage to allow
+# users to change settings.
+
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 

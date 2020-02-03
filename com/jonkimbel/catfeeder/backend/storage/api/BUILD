@@ -1,3 +1,5 @@
+# This package contains API for storing and fetching information in a non-volatile way.
+
 package(default_visibility = ["//com/jonkimbel/catfeeder/backend:__subpackages__"])
 
 java_library(
