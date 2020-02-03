@@ -4,7 +4,13 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 
 java_binary(
     name = "backend",
-    srcs = ["Backend.java"],
+    srcs = [
+        "Backend.java",
+        "FeedingTimeUpdater.java",
+        "HttpBodyRenderer.java",
+        "PreferencesUpdater.java",
+        "ProtoBodyRenderer.java",
+    ],
     main_class = "com.jonkimbel.catfeeder.backend.Backend",
     deps = [
         "//com/jonkimbel/catfeeder/backend/server",

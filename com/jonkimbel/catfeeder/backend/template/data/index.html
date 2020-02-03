@@ -36,6 +36,9 @@
       <form action="/" method="post" enctype="text/plain" class="w3-padding w3-black">
         Update feeding schedule:<br>
 
+        <!-- TODO [V2]: add a "feed now" button. Override the next feeding time when the user taps "feed now", clear
+             this override once the photon has fed. -->
+
         <input type="radio" class="w3-radio" name="feed_schedule" value="mornings"
             {{feed_schedule_mornings}}>
         <span class="w3-text-cyan">Auto-feed in the mornings</span><br>
