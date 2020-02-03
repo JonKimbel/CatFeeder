@@ -6,9 +6,11 @@ java_library(
     name = "api",
     srcs = [
         "PreferencesStorage.java",
+        "PasswordStorage.java",
     ],
     deps = [
         "//com/jonkimbel/catfeeder/backend/storage",
         "//com/jonkimbel/catfeeder/backend/proto:preferences_java_proto",
+        "@maven//:org_checkerframework_checker_qual",
     ]
 )

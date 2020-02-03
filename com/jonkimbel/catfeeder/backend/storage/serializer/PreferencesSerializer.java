@@ -26,10 +26,6 @@ public class PreferencesSerializer implements Serializer {
 
   @Override
   public void serialize(String path, Object value) {
-    if (!(value instanceof Preferences)) {
-      return;
-    }
-
     Preferences prefs = (Preferences) value;
 
     try {

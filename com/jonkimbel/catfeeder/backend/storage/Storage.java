@@ -3,6 +3,7 @@ package com.jonkimbel.catfeeder.backend.storage;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jonkimbel.catfeeder.backend.storage.serializer.StringSerializer;
 import com.jonkimbel.catfeeder.backend.storage.serializer.Serializer;
 import com.jonkimbel.catfeeder.backend.storage.serializer.PreferencesSerializer;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -10,12 +11,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class Storage {
   public enum Item {
     PREFERENCES("preferences.binarypb", new PreferencesSerializer()),
-    ;
+    PASSWORD("password.txt", new StringSerializer());
 
     public final String filename;
     private final Serializer serializer;
 
-    private Item(String filename, Serializer serializer) {
+    Item(String filename, Serializer serializer) {
       this.filename = filename;
       this.serializer = serializer;
     }
