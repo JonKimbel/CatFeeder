@@ -1,6 +1,7 @@
 package com.jonkimbel.catfeeder.backend;
 
 import com.jonkimbel.catfeeder.backend.server.*;
+import com.jonkimbel.catfeeder.backend.storage.api.PasswordStorage;
 import com.jonkimbel.catfeeder.backend.template.Template;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedRequest;
 import com.jonkimbel.catfeeder.backend.server.HttpServer.RequestHandler;
@@ -54,6 +55,18 @@ public class Backend implements RequestHandler {
       return responseBuilder.setResponseCode(Http.ResponseCode.NOT_IMPLEMENTED).build();
     }
 
+    // Handle requests from embedded clients.
+    if (requestHeader.path.startsWith("/photon")) {
+      boolean wroteLastFeedingTime = feedingTimeUpdater.update(
+          EmbeddedRequest.parseFrom(requestBody.getBytes()));
+      protoBodyRenderer.render(responseBuilder, wroteLastFeedingTime);
+      return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
+    }
+
+    // TODO [V1]: check cookie for password, if it's not present redirect to /login.
+    // See this info on cookie protocol:
+    // https://stackoverflow.com/questions/3467114/how-are-cookies-passed-in-the-http-protocol
+
     // Handle requests to update preferences.
     if (isFormInput) {
       preferencesUpdater.update(MapParser.parsePostBody(requestBody));
@@ -65,13 +78,8 @@ public class Backend implements RequestHandler {
     } else if (requestHeader.path.equals("/")) {
       httpBodyRenderer.render(responseBuilder, Template.INDEX);
       return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
-    // Handle requests from embedded clients.
-    } else if (requestHeader.path.startsWith("/photon")) {
-      boolean wroteLastFeedingTime = feedingTimeUpdater.update(
-          EmbeddedRequest.parseFrom(requestBody.getBytes()));
-      protoBodyRenderer.render(responseBuilder, wroteLastFeedingTime);
-      return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
     }
+    // TODO [V1]: serve /login.
 
     // Handle all other requests.
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();

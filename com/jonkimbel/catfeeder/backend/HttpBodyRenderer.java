@@ -26,11 +26,6 @@ public class HttpBodyRenderer {
     // TODO [V1]: Implement support for user-defined feeding times - just take a # of scoops and a
     //            time per feeding, pace the feedings out automatically.
 
-    // TODO [V1]: Add passcode to web UI.
-    // Oauth? Probably not allowed over HTTP, but worth investigation.
-    // See this info on cookie protocol:
-    // https://stackoverflow.com/questions/3467114/how-are-cookies-passed-in-the-http-protocol
-
     Map<String, String> templateValues = new HashMap<>();
     FeedingPreferences feedingPrefs = PreferencesStorage.get().getFeedingPreferences();
 
