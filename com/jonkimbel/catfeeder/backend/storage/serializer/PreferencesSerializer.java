@@ -15,7 +15,7 @@ public class PreferencesSerializer implements Serializer {
     try {
       prefsFromFile = Preferences.parseFrom(Files.readAllBytes(Paths.get(path)));
     } catch (IOException e) {
-      System.err.printf("%s - Could not read Preferences file:%s\n", new Date(), e);
+      System.err.printf("%s - Could not read Preferences from %s:%s\n", new Date(), path, e);
     }
 
     if (prefsFromFile != null) {
@@ -31,7 +31,7 @@ public class PreferencesSerializer implements Serializer {
     try {
       Files.write(Paths.get(path), prefs.toByteArray());
     } catch (IOException e) {
-      System.err.printf("%s - Could not write Preferences file:%s\n", new Date(), e);
+      System.err.printf("%s - Could not write Preferences from %s:%s\n", new Date(), path, e);
     }
   }
 }

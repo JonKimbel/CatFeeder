@@ -17,7 +17,7 @@ public class StringSerializer implements Serializer {
     try {
       passFromFile = Files.readString(Paths.get(path));
     } catch (IOException e) {
-      System.err.printf("%s - Could not read String to %s:%s\n", new Date(), path, e);
+      System.err.printf("%s - Could not read String from %s:%s\n", new Date(), path, e);
     }
 
     return passFromFile;
