@@ -4,8 +4,12 @@ java_library(
     name = "template",
     srcs = [
         "TemplateFiller.java",
+        "Template.java",
     ],
-    deps = [":token_finder"]
+    deps = [
+        ":token_finder",
+        "//com/jonkimbel/catfeeder/backend/template/data",
+    ],
 )
 
 java_library(

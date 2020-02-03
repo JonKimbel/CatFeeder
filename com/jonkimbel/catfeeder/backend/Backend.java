@@ -5,6 +5,7 @@ import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPrefer
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences.FeedingSchedule;
 import com.jonkimbel.catfeeder.backend.server.*;
 import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
+import com.jonkimbel.catfeeder.backend.template.Template;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedRequest;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedResponse;
 import com.jonkimbel.catfeeder.backend.server.HttpServer.RequestHandler;
@@ -23,7 +24,6 @@ import java.util.*;
 
 public class Backend implements RequestHandler {
   private static final int PORT = 80;
-  private static final String TEMPLATE_PATH = "/com/jonkimbel/catfeeder/backend/template.html";
   private static final int MIN_SCOOPS_PER_FEEDING = 1;
   private static final int MAX_FEEDINGS_TO_DISPLAY = 3;
 
@@ -75,7 +75,7 @@ public class Backend implements RequestHandler {
       //            "feed now", clear this override once the photon has fed.
       return responseBuilder
           .setResponseCode(Http.ResponseCode.OK)
-          .setHtmlBody(getHtmlResponse(TEMPLATE_PATH))
+          .setHtmlBody(getHtmlResponse(Template.INDEX.toString()))
           .build();
     } else if (requestHeader.path.startsWith("/photon")) {
       // TODO [V2]: split out into a separate method.
@@ -124,7 +124,7 @@ public class Backend implements RequestHandler {
     return response.build().toByteArray();
   }
 
-  private String getHtmlResponse(String templatePath) throws IOException {
+  private String getHtmlResponse(String template) throws IOException {
     // TODO [V1]: Implement support for user-defined feeding times - just take a # of scoops and a
     //            time per feeding, pace the feedings out automatically.
 
@@ -133,8 +133,6 @@ public class Backend implements RequestHandler {
     // See this info on cookie protocol:
     // https://stackoverflow.com/questions/3467114/how-are-cookies-passed-in-the-http-protocol
 
-    String template = new String(getClass().getResourceAsStream(templatePath).readAllBytes(),
-        StandardCharsets.UTF_8);
     Map<String, String> templateValues = new HashMap<>();
     FeedingPreferences feedingPrefs = PreferencesStorage.get().getFeedingPreferences();
 

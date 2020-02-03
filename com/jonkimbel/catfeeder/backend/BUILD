@@ -16,8 +16,5 @@ java_binary(
         "//api:cat_feeder_java_proto",
         "@maven//:org_checkerframework_checker_qual",
     ],
-    resources = [
-        "template.html",
-    ],
     visibility = ["//visibility:public"],
 )
