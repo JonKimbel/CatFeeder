@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpBodyRenderer {
-  private static final int MAX_FEEDINGS_TO_DISPLAY = 3;
+  private static final int MAX_FEEDINGS_TO_DISPLAY = 10;
 
   public void render(HttpResponse.Builder responseBuilder, Template template) throws IOException {
     switch (template) {
