@@ -14,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -21,8 +22,15 @@ public class Time {
   private static final DateTimeFormatter TIME_FORMATTER =
       DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
   private static final ZoneId DEVICE_TIME_ZONE = ZoneId.of("US/Pacific");
-  private static final int MORNING_TIME_MINUTES_INTO_DAY = 6 * 60; // 6AM.
-  private static final int EVENING_TIME_MINUTES_INTO_DAY = 18 * 60; // 6PM.
+  // 366 cal/cup, each feeding is 1/12 cup, cat needs 180 cal/day.
+  private static final int[] MORNING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 90 cal.
+      6 * 60,  // 6 AM.
+      6 * 60 + 5,  // 6:05 AM.
+      6 * 60 + 10};  // 6:10 AM.
+  private static final int[] EVENING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 90 cal.
+      18 * 60,  // 6 PM.
+      18 * 60 + 5,  // 6:05 PM.
+      18 * 60 + 10};  // 6:10 PM.
   private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10 * 60 * 1000; // 10 min.
   private static final int MAX_PHOTON_TIME_SKEW_S = 30;
 
@@ -80,23 +88,16 @@ public class Time {
   @Nullable
   public static ZonedDateTime getTimeOfNextFeeding() {
     ZonedDateTime now = ZonedDateTime.now(DEVICE_TIME_ZONE);
-    ZonedDateTime midnightThisMorning = now.withHour(0).withMinute(0).withSecond(0).withNano(0);
-    ZonedDateTime morningToday = midnightThisMorning.plusMinutes(MORNING_TIME_MINUTES_INTO_DAY);
-    ZonedDateTime eveningToday = midnightThisMorning.plusMinutes(EVENING_TIME_MINUTES_INTO_DAY);
-    ZonedDateTime morningTomorrow = morningToday.plusDays(1);
 
-    // All of the feeding times we might need to feed. This list must remain in chronological order.
-    List<ZonedDateTime> upcomingFeedingTimes = new ArrayList<ZonedDateTime>();
-
+    // Determine all of the feeding times we might need to feed.
+    List<ZonedDateTime> upcomingFeedingTimes = new ArrayList<>();
     switch (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule()) {
       case AUTO_FEED_IN_MORNINGS:
-        upcomingFeedingTimes.add(morningToday);
-        upcomingFeedingTimes.add(morningTomorrow);
+        addFeedingTimes(upcomingFeedingTimes, MORNING_FEEDING_TIMES_MINUTES_INTO_DAY);
         break;
       case AUTO_FEED_IN_MORNINGS_AND_EVENINGS:
-        upcomingFeedingTimes.add(morningToday);
-        upcomingFeedingTimes.add(eveningToday);
-        upcomingFeedingTimes.add(morningTomorrow);
+        addFeedingTimes(upcomingFeedingTimes, MORNING_FEEDING_TIMES_MINUTES_INTO_DAY);
+        addFeedingTimes(upcomingFeedingTimes, EVENING_FEEDING_TIMES_MINUTES_INTO_DAY);
         break;
       default:
         break;
@@ -107,6 +108,7 @@ public class Time {
     @Nullable ZonedDateTime timeOfLastFeeding = getTimeOfLastFeeding();
     @Nullable ZonedDateTime timeOfLastFeedingScheduleChange = getTimeOfLastFeedingScheduleChange();
 
+    upcomingFeedingTimes.sort((time, otherTime) -> time.compareTo(otherTime));
     for (ZonedDateTime upcomingFeedingTime : upcomingFeedingTimes) {
       if (upcomingFeedingTime.isAfter(now)) {
         if (timeOfLastFeeding != null
@@ -130,6 +132,16 @@ public class Time {
       }
     }
     return null;
+  }
+
+  private static void addFeedingTimes(List<ZonedDateTime> upcomingFeedingTimes,
+      int[] feedingTimesMinutesIntoDay) {
+    ZonedDateTime midnightThisMorning = ZonedDateTime.now(DEVICE_TIME_ZONE)
+        .withHour(0).withMinute(0).withSecond(0).withNano(0);
+    for (int minutesIntoDay : feedingTimesMinutesIntoDay) {
+      upcomingFeedingTimes.add(midnightThisMorning.plusMinutes(minutesIntoDay));
+      upcomingFeedingTimes.add(midnightThisMorning.plusMinutes(minutesIntoDay).plusDays(1));
+    }
   }
 
   public static long getTimeToNextCheckInMs() {
