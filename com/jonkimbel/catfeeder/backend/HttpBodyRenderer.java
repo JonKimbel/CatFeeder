@@ -19,10 +19,13 @@ public class HttpBodyRenderer {
       case INDEX:
         responseBuilder.setHtmlBody(renderIndex(Template.INDEX.toString()));
         break;
+      case LOGIN:
+        responseBuilder.setHtmlBody(Template.LOGIN.toString());
+        break;
     }
   }
 
-  private static String renderIndex(String template) throws IOException {
+  private static String renderIndex(String templateHtml) throws IOException {
     // TODO [V2]: Implement support for user-defined feeding times - just take a # of scoops and a
     //            time per feeding, pace the feedings out automatically.
 
@@ -64,6 +67,6 @@ public class HttpBodyRenderer {
       templateValues.put("feed_schedule_never", "checked");
     }
 
-    return new TemplateFiller(template).fill(templateValues);
+    return new TemplateFiller(templateHtml).fill(templateValues);
   }
 }

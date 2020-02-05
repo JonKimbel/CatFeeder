@@ -48,10 +48,12 @@ public class Backend implements RequestHandler {
   public HttpResponse handleRequest(HttpHeader requestHeader, String requestBody)
       throws IOException {
     HttpResponse.Builder responseBuilder = HttpResponse.builder();
-    boolean isFormInput =
+    boolean isPreferencesUpdate =
         requestHeader.path.equals("/") && requestHeader.method == Http.Method.POST;
+    boolean isLogin =
+        requestHeader.path.equals("/login") && requestHeader.method == Http.Method.POST;
 
-    if (requestHeader.method != Http.Method.GET && !isFormInput) {
+    if (requestHeader.method != Http.Method.GET && !isPreferencesUpdate & !isLogin) {
       return responseBuilder.setResponseCode(Http.ResponseCode.NOT_IMPLEMENTED).build();
     }
 
@@ -67,19 +69,35 @@ public class Backend implements RequestHandler {
     // See this info on cookie protocol:
     // https://stackoverflow.com/questions/3467114/how-are-cookies-passed-in-the-http-protocol
 
-    // Handle requests to update preferences.
-    if (isFormInput) {
+    if (isPreferencesUpdate) {
+      // Handle requests to update preferences.
       preferencesUpdater.update(MapParser.parsePostBody(requestBody));
       return responseBuilder
           .setResponseCode(Http.ResponseCode.FOUND)
           .setLocation("/")
           .build();
-    // Handle requests for the home page.
+    } else if (isLogin) {
+      // Handle requests to log in.
+      String pass = PasswordStorage.get();
+      if (pass == null || pass.equals(MapParser.parsePostBody(requestBody).get("passcode"))) {
+        return responseBuilder
+            .setResponseCode(Http.ResponseCode.FOUND)
+            .setLocation("/")
+            .build();
+      } else {
+        // TODO [V1]: add template value for password error message.
+        httpBodyRenderer.render(responseBuilder, Template.LOGIN);
+        return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
+      }
     } else if (requestHeader.path.equals("/")) {
+      // Handle requests for the home page.
       httpBodyRenderer.render(responseBuilder, Template.INDEX);
       return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
+    } else if (requestHeader.path.equals("/login")) {
+      // Handle requests for the login page.
+      httpBodyRenderer.render(responseBuilder, Template.LOGIN);
+      return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
     }
-    // TODO [V1]: serve /login.
 
     // Handle all other requests.
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
