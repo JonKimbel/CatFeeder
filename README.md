@@ -4,7 +4,7 @@ Feeds cat.
 
 ## Project Status
 
-*   V1 - MVP, reliable auto-feeder. 85% complete.
+*   V1 - MVP, reliable auto-feeder. 95% complete.
 *   V2 - fancier & more robust auto-feeder with camera, cleaner code.
     Not started.
 *   V3 - very clean & robust code. Not planned.
@@ -16,6 +16,47 @@ Run the following from this directory to set up the pre-commit checks.
 ```
 git config core.hooksPath hooks
 ```
+
+## Construction
+
+### Electronics
+
+*   Buy a [Particle Photon](https://smile.amazon.com/Particle-Reprogrammable-Development-Prototyping-Electronics/dp/B016YNU1A0/)
+*   Buy a [standard-size servo capable of rotating at least 180°](https://smile.amazon.com/gp/product/B07BVR816V/)
+*   Buy a power supply capable of powering both (5V @ ~3A)
+
+Connect the servo's PWM pin to `D0` on the Photon, preferably with solder on a
+protoboard. Connect the servo and Photon to the power supply.
+
+### Mechanism
+
+*   3D print all of the non-"mock" objects in [this Onshape project](https://cad.onshape.com/documents/860fec32e4bfca1868b60fc5/w/15e7cf7a15cfd49a1405bb9f/e/bb58b1b1518a81a205b9291e)
+    *   Alternatively, [download the STLs directly](https://drive.google.com/open?id=10rxtRvgRGIzVJ8uLc_RcWd5JzaJx-dav)
+*   Buy a ricotta cheese container, eat the cheese and wash the container
+*   Buy socket head bolts, nuts, and threaded inserts ([1](https://smile.amazon.com/gp/product/B07F75DMHF/),
+    [2](https://smile.amazon.com/gp/product/B0728FBS77/),
+    [3](https://smile.amazon.com/gp/product/B07WH59N6T/)):
+    *   1x 25mm M4 socket head bolt
+    *   1x 20mm M4 socket head bolt
+    *   2x 16mm M4 socket head bolt
+    *   2x 8mm M4 socket head bolt
+    *   2x 8mm M2 socket head bolt
+    *   4x M4 nuts
+    *   2x 6mm long M4 threaded inserts
+    *   2x 4mm long M2 threaded inserts
+    *   4x servo mounting screws
+
+Cut a hole in the bottom of the ricotta container to line up with the hole in
+the top of the food chute.
+
+Hot glue the following together:
+
+*   Ricotta container to food chute
+*   Food chute to food hopper
+*   Lower legs to feet
+
+Insert threaded inserts in the blind holes (apart from the four holes used to
+mount the servo). Bolt everything together where bolt holes are present.
 
 ## Compiling
 
