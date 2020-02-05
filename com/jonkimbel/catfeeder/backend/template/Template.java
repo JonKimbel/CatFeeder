@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public enum Template {
-  INDEX("/com/jonkimbel/catfeeder/backend/template/data/index.html")
+  INDEX("/com/jonkimbel/catfeeder/backend/template/data/index.html"),
+  LOGIN("/com/jonkimbel/catfeeder/backend/template/data/login.html"),
   ;
 
   private final String filePath;

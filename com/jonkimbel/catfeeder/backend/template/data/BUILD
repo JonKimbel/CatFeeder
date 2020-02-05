@@ -6,5 +6,6 @@ java_library(
     name = "data",
     resources = [
         "index.html",
+        "login.html",
     ],
 )
