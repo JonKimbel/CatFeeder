@@ -44,9 +44,7 @@ public class Storage {
 
     Object itemFromDisk = item.serializer.deserialize(item.filename);
 
-    if (itemFromDisk != null) {
-      cache.put(item, itemFromDisk);
-    }
+    cache.put(item, itemFromDisk);
 
     return itemFromDisk;
   }
