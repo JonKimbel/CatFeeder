@@ -23,7 +23,7 @@ public class HttpBodyRenderer {
   }
 
   private static String renderIndex(String template) throws IOException {
-    // TODO [V1]: Implement support for user-defined feeding times - just take a # of scoops and a
+    // TODO [V2]: Implement support for user-defined feeding times - just take a # of scoops and a
     //            time per feeding, pace the feedings out automatically.
 
     Map<String, String> templateValues = new HashMap<>();
