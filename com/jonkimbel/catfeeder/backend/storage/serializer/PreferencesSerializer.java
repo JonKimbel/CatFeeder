@@ -1,7 +1,9 @@
 package com.jonkimbel.catfeeder.backend.storage.serializer;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 
@@ -13,8 +15,9 @@ public class PreferencesSerializer implements Serializer {
   public Object deserialize(String path) {
     Preferences prefsFromFile = null;
     try {
-      prefsFromFile = Preferences.parseFrom(Files.readAllBytes(Paths.get(path)));
-    } catch (IOException e) {
+      Path pathToPreferencesFile = LibraryDirectory.get().resolve(path);
+      prefsFromFile = Preferences.parseFrom(Files.readAllBytes(pathToPreferencesFile));
+    } catch (IOException | URISyntaxException e) {
       System.err.printf("%s - Could not read Preferences from %s:%s\n", new Date(), path, e);
     }
 

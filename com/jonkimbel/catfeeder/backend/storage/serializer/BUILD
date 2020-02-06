@@ -8,6 +8,7 @@ java_library(
         "PreferencesSerializer.java",
         "Serializer.java",
         "StringSerializer.java",
+        "LibraryDirectory.java",
     ],
     deps = [
         "//com/jonkimbel/catfeeder/backend/proto:preferences_java_proto",

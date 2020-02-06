@@ -2,11 +2,11 @@ package com.jonkimbel.catfeeder.backend.storage.serializer;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass;
 
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.*;
 import java.util.Date;
 
 public class StringSerializer implements Serializer {
@@ -15,9 +15,9 @@ public class StringSerializer implements Serializer {
     String passFromFile = null;
 
     try {
-      passFromFile = Files.readString(Paths.get(path));
-    } catch (IOException e) {
-      System.err.printf("%s - Could not read String from %s:%s\n", new Date(), path, e);
+      passFromFile = Files.readString(LibraryDirectory.get().resolve(path));
+    } catch (IOException | URISyntaxException e) {
+      System.err.printf("%s - Could not read String from %s: %s\n", new Date(), path, e);
     }
 
     return passFromFile;
@@ -29,7 +29,7 @@ public class StringSerializer implements Serializer {
       Files.writeString(Paths.get(path), (String) value,
           StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
     } catch (IOException e) {
-      System.err.printf("%s - Could not write String to %s:%s\n", new Date(), path, e);
+      System.err.printf("%s - Could not write String to %s: %s\n", new Date(), path, e);
     }
   }
 }
