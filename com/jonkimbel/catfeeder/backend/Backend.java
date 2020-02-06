@@ -114,6 +114,7 @@ public class Backend implements RequestHandler {
       return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
     }
 
+    // TODO [V1]: Render *something* when we 404, it looks like a bug otherwise.
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
 }
