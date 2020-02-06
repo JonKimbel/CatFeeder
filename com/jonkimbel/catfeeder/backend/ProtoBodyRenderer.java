@@ -12,7 +12,10 @@ public class ProtoBodyRenderer {
     CatFeeder.EmbeddedResponse.Builder response = CatFeeder.EmbeddedResponse.newBuilder();
 
     response.setDelayUntilNextCheckInMs(Time.getTimeToNextCheckInMs());
-    response.setDelayUntilNextFeedingMs(Time.getTimeToNextFeedingMs());
+    Long value = Time.getTimeToNextFeedingMs();
+    if (value != null) {
+      response.setDelayUntilNextFeedingMs(value);
+    }
     response.setLastFeedingTimeConsumed(wroteLastFeedingTime);
 
     response.setScoopsToFeed(Math.max(
