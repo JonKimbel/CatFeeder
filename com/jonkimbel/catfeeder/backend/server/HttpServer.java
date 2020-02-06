@@ -116,7 +116,7 @@ public class HttpServer {
       printWriter.printf("Location: %s\r\n", response.getLocationUrl());
     }
     for (String cookieName : response.getCookies().keySet()) {
-      printWriter.printf("Set-Cookie: %s=%s; Expires=%s Max-Age=%d\r\n",
+      printWriter.printf("Set-Cookie: %s=%s; Expires=%s; Max-Age=%d\r\n",
           cookieName, response.getCookies().get(cookieName),
           // Cookies should set Expires=old-date per rfc2109.
           HTTP_FORMATTER.format(ZonedDateTime.now().minusYears(1)),
