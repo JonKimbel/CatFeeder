@@ -14,6 +14,7 @@ java_binary(
         "HttpBodyRenderer.java",
         "PreferencesUpdater.java",
         "ProtoBodyRenderer.java",
+        "ActionDeterminer.java",
     ],
     main_class = "com.jonkimbel.catfeeder.backend.Backend",
     deps = [

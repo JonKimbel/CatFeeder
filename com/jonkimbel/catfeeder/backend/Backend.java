@@ -1,7 +1,7 @@
 package com.jonkimbel.catfeeder.backend;
 
+import com.jonkimbel.catfeeder.backend.ActionDeterminer.Action;
 import com.jonkimbel.catfeeder.backend.server.*;
-import com.jonkimbel.catfeeder.backend.storage.api.PasswordStorage;
 import com.jonkimbel.catfeeder.backend.template.Template;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedRequest;
 import com.jonkimbel.catfeeder.backend.server.HttpServer.RequestHandler;
@@ -48,73 +48,57 @@ public class Backend implements RequestHandler {
   @Override
   public HttpResponse handleRequest(HttpHeader requestHeader, String requestBody)
       throws IOException {
-    // TODO [V1]: refactor by splitting out decision from execution.
-
+    Action action = new ActionDeterminer(requestHeader).determine();
     HttpResponse.Builder responseBuilder = HttpResponse.builder();
-    boolean isPreferencesUpdate =
-        requestHeader.path.equals("/") && requestHeader.method == Http.Method.POST;
-    boolean isLogin =
-        requestHeader.path.equals("/login") && requestHeader.method == Http.Method.POST;
-    @Nullable String passcode = PasswordStorage.get();
-    boolean isLoggedIn = passcode == null || passcode.equals(requestHeader.getCookie("passcode"));
 
-    if (requestHeader.method != Http.Method.GET && !isPreferencesUpdate & !isLogin) {
-      return responseBuilder.setResponseCode(Http.ResponseCode.NOT_IMPLEMENTED).build();
-    }
+    switch (action) {
+      // Photon actions.
+      case SERVE_PHOTON:
+        boolean wroteLastFeedingTime = feedingTimeUpdater.update(
+            EmbeddedRequest.parseFrom(requestBody.getBytes()));
+        return responseBuilder
+            .setProtobufBody(protoBodyRenderer.render(wroteLastFeedingTime))
+            .setResponseCode(Http.ResponseCode.OK)
+            .build();
 
-    // Handle requests from embedded clients.
-    if (requestHeader.path.startsWith("/photon")) {
-      boolean wroteLastFeedingTime = feedingTimeUpdater.update(
-          EmbeddedRequest.parseFrom(requestBody.getBytes()));
-      protoBodyRenderer.render(responseBuilder, wroteLastFeedingTime);
-      return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
-    }
+      // Logged-in actions.
+      case SERVE_HOME:
+        return responseBuilder
+            .setHtmlBody(httpBodyRenderer.render(Template.INDEX))
+            .setResponseCode(Http.ResponseCode.OK)
+            .build();
+      case UPDATE_PREFERENCES_REDIRECT_TO_HOME:
+        preferencesUpdater.update(MapParser.parsePostBody(requestBody));
+        // Fall through.
+      case REDIRECT_TO_HOME:
+        return responseBuilder
+            .setResponseCode(Http.ResponseCode.FOUND)
+            .setLocation("/")
+            .build();
 
-    if (isLoggedIn && isPreferencesUpdate) {
-      // Handle requests to update preferences.
-      preferencesUpdater.update(MapParser.parsePostBody(requestBody));
-      return responseBuilder
-          .setResponseCode(Http.ResponseCode.FOUND)
-          .setLocation("/")
-          .build();
-    } else if (requestHeader.path.equals("/")) {
-      // Handle requests for the home page.
-      if (isLoggedIn) {
-        httpBodyRenderer.render(responseBuilder, Template.INDEX);
-        return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
-      } else {
+      // Login actions.
+      case SERVE_LOGIN:
+        return responseBuilder
+            .setHtmlBody(httpBodyRenderer.render(Template.LOGIN))
+            .setResponseCode(Http.ResponseCode.OK)
+            .build();
+      case REDIRECT_TO_LOGIN:
         return responseBuilder
             .setResponseCode(Http.ResponseCode.FOUND)
             .setLocation("/login")
             .build();
-      }
-    } else if (isLoggedIn) {
-      // Redirect to home page if already logged in.
-      return responseBuilder
-          .setResponseCode(Http.ResponseCode.FOUND)
-          .setLocation("/")
-          .build();
-    } else if (isLogin) {
-      // Handle requests to log in.
-      String clientAttempt = MapParser.parsePostBody(requestBody).get("passcode");
-      if (passcode == null || passcode.equals(clientAttempt)) {
+      case SET_COOKIE_REDIRECT_TO_HOME:
         return responseBuilder
-            .setCookie("passcode", clientAttempt)
+            .setCookie("passcode", MapParser.parsePostBody(requestBody).get("passcode"))
             .setResponseCode(Http.ResponseCode.FOUND)
             .setLocation("/")
             .build();
-      } else {
-        // TODO [V2]: add template value for password error message.
-        httpBodyRenderer.render(responseBuilder, Template.LOGIN);
-        return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
-      }
-    } else if (requestHeader.path.equals("/login")) {
-      // Show the login page.
-      httpBodyRenderer.render(responseBuilder, Template.LOGIN);
-      return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
+
+      // Error actions.
+      case NOT_IMPLEMENTED:
+        break;
     }
 
-    // TODO [V2]: Render *something* when we 404, it looks like a bug otherwise.
-    return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
+    return responseBuilder.setResponseCode(Http.ResponseCode.NOT_IMPLEMENTED).build();
   }
 }

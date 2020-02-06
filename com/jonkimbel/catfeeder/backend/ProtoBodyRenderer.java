@@ -8,7 +8,7 @@ import com.jonkimbel.catfeeder.proto.CatFeeder;
 import java.io.IOException;
 
 public class ProtoBodyRenderer {
-  public void render(HttpResponse.Builder responseBuilder, boolean wroteLastFeedingTime) {
+  public byte[] render(boolean wroteLastFeedingTime) {
     CatFeeder.EmbeddedResponse.Builder response = CatFeeder.EmbeddedResponse.newBuilder();
 
     response.setDelayUntilNextCheckInMs(Time.getTimeToNextCheckInMs());
@@ -22,6 +22,6 @@ public class ProtoBodyRenderer {
         PreferencesStorage.get().getFeedingPreferences().getNumberOfScoopsPerFeeding(),
         /* min scoops per feeding */ 1));
 
-    responseBuilder.setProtobufBody(response.build().toByteArray());
+    return response.build().toByteArray();
   }
 }

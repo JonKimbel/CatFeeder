@@ -8,20 +8,22 @@ import com.jonkimbel.catfeeder.backend.template.TemplateFiller;
 import com.jonkimbel.catfeeder.backend.time.Time;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class HttpBodyRenderer {
   private static final int MAX_FEEDINGS_TO_DISPLAY = 10;
 
-  public void render(HttpResponse.Builder responseBuilder, Template template) throws IOException {
+  public String render(Template template) throws IOException {
     switch (template) {
       case INDEX:
-        responseBuilder.setHtmlBody(renderIndex(Template.INDEX.toString()));
-        break;
+        return renderIndex(Template.INDEX.toString());
       case LOGIN:
-        responseBuilder.setHtmlBody(Template.LOGIN.toString());
-        break;
+        return Template.LOGIN.toString();
+      default:
+        System.err.printf("%s - unrecognized template: %s\n", new Date(), template);
+        return "";
     }
   }
 
