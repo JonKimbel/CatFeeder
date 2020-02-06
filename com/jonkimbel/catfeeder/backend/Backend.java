@@ -5,6 +5,7 @@ import com.jonkimbel.catfeeder.backend.storage.api.PasswordStorage;
 import com.jonkimbel.catfeeder.backend.template.Template;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedRequest;
 import com.jonkimbel.catfeeder.backend.server.HttpServer.RequestHandler;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -47,11 +48,15 @@ public class Backend implements RequestHandler {
   @Override
   public HttpResponse handleRequest(HttpHeader requestHeader, String requestBody)
       throws IOException {
+    // TODO [V1]: refactor by splitting out decision from execution.
+
     HttpResponse.Builder responseBuilder = HttpResponse.builder();
     boolean isPreferencesUpdate =
         requestHeader.path.equals("/") && requestHeader.method == Http.Method.POST;
     boolean isLogin =
         requestHeader.path.equals("/login") && requestHeader.method == Http.Method.POST;
+    @Nullable String passcode = PasswordStorage.get();
+    boolean isLoggedIn = passcode == null || passcode.equals(requestHeader.getCookie("passcode"));
 
     if (requestHeader.method != Http.Method.GET && !isPreferencesUpdate & !isLogin) {
       return responseBuilder.setResponseCode(Http.ResponseCode.NOT_IMPLEMENTED).build();
@@ -65,22 +70,36 @@ public class Backend implements RequestHandler {
       return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
     }
 
-    // TODO [V1]: check cookie for password, if it's not present redirect to /login.
-    // See this info on cookie protocol:
-    // https://stackoverflow.com/questions/3467114/how-are-cookies-passed-in-the-http-protocol
-
-    if (isPreferencesUpdate) {
+    if (isLoggedIn && isPreferencesUpdate) {
       // Handle requests to update preferences.
       preferencesUpdater.update(MapParser.parsePostBody(requestBody));
       return responseBuilder
           .setResponseCode(Http.ResponseCode.FOUND)
           .setLocation("/")
           .build();
+    } else if (requestHeader.path.equals("/")) {
+      // Handle requests for the home page.
+      if (isLoggedIn) {
+        httpBodyRenderer.render(responseBuilder, Template.INDEX);
+        return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
+      } else {
+        return responseBuilder
+            .setResponseCode(Http.ResponseCode.FOUND)
+            .setLocation("/login")
+            .build();
+      }
+    } else if (isLoggedIn) {
+      // Redirect to home page if already logged in.
+      return responseBuilder
+          .setResponseCode(Http.ResponseCode.FOUND)
+          .setLocation("/")
+          .build();
     } else if (isLogin) {
       // Handle requests to log in.
-      String pass = PasswordStorage.get();
-      if (pass == null || pass.equals(MapParser.parsePostBody(requestBody).get("passcode"))) {
+      String clientAttempt = MapParser.parsePostBody(requestBody).get("passcode");
+      if (passcode == null || passcode.equals(clientAttempt)) {
         return responseBuilder
+            .setCookie("passcode", clientAttempt)
             .setResponseCode(Http.ResponseCode.FOUND)
             .setLocation("/")
             .build();
@@ -89,17 +108,12 @@ public class Backend implements RequestHandler {
         httpBodyRenderer.render(responseBuilder, Template.LOGIN);
         return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
       }
-    } else if (requestHeader.path.equals("/")) {
-      // Handle requests for the home page.
-      httpBodyRenderer.render(responseBuilder, Template.INDEX);
-      return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
     } else if (requestHeader.path.equals("/login")) {
-      // Handle requests for the login page.
+      // Show the login page.
       httpBodyRenderer.render(responseBuilder, Template.LOGIN);
       return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
     }
 
-    // Handle all other requests.
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
 }
