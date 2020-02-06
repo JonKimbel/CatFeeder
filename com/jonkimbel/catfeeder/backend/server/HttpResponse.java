@@ -2,6 +2,8 @@ package com.jonkimbel.catfeeder.backend.server;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.*;
+
 // TODO [V3]: Make @AutoValue.
 
 public class HttpResponse {
@@ -9,6 +11,7 @@ public class HttpResponse {
   private final String htmlBody;
   private final Http.ResponseCode responseCode;
   private final @Nullable String locationUrl;
+  private final Map<String, String> cookies;
 
   public boolean isBodyHtml() {
     return htmlBody.length() > protobufBody.length;
@@ -30,6 +33,10 @@ public class HttpResponse {
     return locationUrl;
   }
 
+  public Map<String, String> getCookies() {
+    return cookies;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -38,11 +45,13 @@ public class HttpResponse {
       String htmlBody,
       byte[] protobufBody,
       Http.ResponseCode responseCode,
-      @Nullable String locationUrl) {
+      @Nullable String locationUrl,
+      Map<String, String> cookies) {
     this.htmlBody = htmlBody;
     this.protobufBody = protobufBody;
     this.responseCode = responseCode;
     this.locationUrl = locationUrl;
+    this.cookies = cookies;
   }
 
   public static class Builder {
@@ -50,6 +59,7 @@ public class HttpResponse {
     private byte[] protobufBody = new byte[0];
     private Http.ResponseCode responseCode = Http.ResponseCode.NOT_IMPLEMENTED;
     private @Nullable String locationUrl;
+    private Map<String, String> cookies = new HashMap<>();
 
     public Builder setHtmlBody(String htmlBody) {
       this.htmlBody = htmlBody;
@@ -73,8 +83,13 @@ public class HttpResponse {
       return this;
     }
 
+    public Builder setCookie(String key, String value) {
+      cookies.put(key, value);
+      return this;
+    }
+
     public HttpResponse build() {
-      return new HttpResponse(htmlBody, protobufBody, responseCode, locationUrl);
+      return new HttpResponse(htmlBody, protobufBody, responseCode, locationUrl, cookies);
     }
 
     private Builder() {}

@@ -2,12 +2,14 @@ package com.jonkimbel.catfeeder.backend.server;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class HttpServer {
+  private static final DateTimeFormatter HTTP_FORMATTER = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss O");
   private final Socket socket;
   private final RequestHandler requestHandler;
 
@@ -113,7 +115,15 @@ public class HttpServer {
     if (response.getLocationUrl() != null) {
       printWriter.printf("Location: %s\r\n", response.getLocationUrl());
     }
-    printWriter.printf("Date: %s\r\n", new Date());
+    for (String cookieName : response.getCookies().keySet()) {
+      printWriter.printf("Set-Cookie: %s=%s; Expires=%s Max-Age=%d\r\n",
+          cookieName, response.getCookies().get(cookieName),
+          // Cookies should set Expires=old-date per rfc2109.
+          HTTP_FORMATTER.format(ZonedDateTime.now().minusYears(1)),
+          // Expire cookies after 30 days.
+          TimeUnit.DAYS.toSeconds(30));
+    }
+    printWriter.printf("Date: %s\r\n", HTTP_FORMATTER.format(ZonedDateTime.now()));
     printWriter.printf("Content-type: %s\r\n", contentType);
     printWriter.printf("Content-length: %d\r\n", contentLength);
     printWriter.println();
