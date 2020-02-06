@@ -15,13 +15,15 @@ public class MapParser {
         /* keyValueDelimiterRegex = */ "=");
   }
 
+  public static Map<String, String> parseCookies(String cookieString) {
+    return parse(cookieString, /* pairDelimiterRegex = */ "\\s*;\\s*",
+        /* keyValueDelimiterRegex = */ "\\s*=\\s*");
+  }
+
   private static Map<String, String> parse(String query, String pairDelimiterRegex,
       String keyValueDelimiterRegex) {
     // TODO [V3]: Make immutable map.
     Map<String, String> keyValueMap = new HashMap<>();
-
-    // Lowercase everything.
-    query = query.toLowerCase();
 
     // Cut off everything before the question mark, including the question mark.
     if (query.contains("?")) {

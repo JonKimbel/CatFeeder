@@ -12,11 +12,12 @@ java_library(
     ],
     deps = [
         "@maven//:org_checkerframework_checker_qual",
+        ":map_parser",
     ],
 )
 
 java_library(
-    name = "query_parser",
+    name = "map_parser",
     srcs = [
         "MapParser.java",
     ],

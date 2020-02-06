@@ -1,9 +1,6 @@
 package com.jonkimbel.catfeeder.backend.server;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +16,8 @@ public class HttpHeader {
   public final String transferEncoding;
   public final Integer contentLength;
 
+  private final Map<String, String> cookies;
+
   private enum HeaderPart {
     METHOD,
     PATH,
@@ -26,6 +25,7 @@ public class HttpHeader {
     HOST,
     TRANSFER_ENCODING,
     CONTENT_LENGTH,
+    COOKIES,
   }
 
   private enum HeaderLine {
@@ -34,6 +34,7 @@ public class HttpHeader {
     TRANSFER_ENCODING("^Transfer-Encoding:\\s(.*)", HeaderPart.TRANSFER_ENCODING),
     METHOD_AND_PATH("^(GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE)\\s(\\S*)\\s(.*)",
         HeaderPart.METHOD, HeaderPart.PATH, HeaderPart.HTTP_VERSION),
+    COOKIE("^Cookie:\\s*(.*)", HeaderPart.COOKIES),
     UNKNOWN(""),
     ;
 
@@ -90,12 +91,18 @@ public class HttpHeader {
       String path,
       String host,
       String transferEncoding,
-      Integer contentLength) {
+      Integer contentLength,
+      Map<String, String> cookies) {
     this.method = method;
     this.path = path;
     this.host = host;
     this.contentLength = contentLength;
     this.transferEncoding = transferEncoding;
+    this.cookies = cookies;
+  }
+
+  public String getCookie(String key) {
+    return cookies.get(key);
   }
 
   // TODO [V3]: use AutoValue.
@@ -105,6 +112,7 @@ public class HttpHeader {
     private String host;
     private String transferEncoding;
     private Integer contentLength;
+    private Map<String, String> cookies = new HashMap<>();
 
     public Builder setMethod(Http.Method method) {
       this.method = method;
@@ -131,8 +139,13 @@ public class HttpHeader {
       return this;
     }
 
+    public Builder setCookies(Map<String, String> cookies) {
+      this.cookies = cookies;
+      return this;
+    }
+
     public HttpHeader build() {
-      return new HttpHeader(method, path, host, transferEncoding, contentLength);
+      return new HttpHeader(method, path, host, transferEncoding, contentLength, cookies);
     }
   }
 
@@ -165,6 +178,10 @@ public class HttpHeader {
         case METHOD_AND_PATH:
           builder.setMethod(Http.Method.fromString(headerLine.getPart(line, HeaderPart.METHOD)));
           builder.setPath(headerLine.getPart(line, HeaderPart.PATH));
+          break;
+
+        case COOKIE:
+          builder.setCookies(MapParser.parseCookies(headerLine.getPart(line, HeaderPart.COOKIES)));
           break;
 
         case UNKNOWN:
