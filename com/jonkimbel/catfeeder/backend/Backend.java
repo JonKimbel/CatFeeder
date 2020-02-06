@@ -104,7 +104,7 @@ public class Backend implements RequestHandler {
             .setLocation("/")
             .build();
       } else {
-        // TODO [V1]: add template value for password error message.
+        // TODO [V2]: add template value for password error message.
         httpBodyRenderer.render(responseBuilder, Template.LOGIN);
         return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
       }
@@ -114,7 +114,7 @@ public class Backend implements RequestHandler {
       return responseBuilder.setResponseCode(Http.ResponseCode.OK).build();
     }
 
-    // TODO [V1]: Render *something* when we 404, it looks like a bug otherwise.
+    // TODO [V2]: Render *something* when we 404, it looks like a bug otherwise.
     return responseBuilder.setResponseCode(Http.ResponseCode.NOT_FOUND).build();
   }
 }
