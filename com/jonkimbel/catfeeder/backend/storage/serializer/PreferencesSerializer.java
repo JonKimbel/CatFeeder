@@ -32,8 +32,9 @@ public class PreferencesSerializer implements Serializer {
     Preferences prefs = (Preferences) value;
 
     try {
-      Files.write(Paths.get(path), prefs.toByteArray());
-    } catch (IOException e) {
+      Path pathToPreferencesFile = LibraryDirectory.get().resolve(path);
+      Files.write(pathToPreferencesFile, prefs.toByteArray());
+    } catch (IOException | URISyntaxException e) {
       System.err.printf("%s - Could not write Preferences from %s:%s\n", new Date(), path, e);
     }
   }
