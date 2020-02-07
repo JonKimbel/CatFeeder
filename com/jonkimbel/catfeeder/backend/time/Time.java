@@ -23,6 +23,8 @@ public class Time {
       DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
   private static final ZoneId DEVICE_TIME_ZONE = ZoneId.of("US/Pacific");
   // TODO [V2]: rename these to "half calories" and "all calories".
+  // TODO [V2]: maybe make the UI ask the user to type in a number of calories to feed per day along
+  // with the number of calories the cat needs in one day.
   // 366 cal/cup, each feeding is 1/12 cup, cat needs 180 cal/day.
   private static final int[] MORNING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 120 cal.
       6 * 60,  // 6 AM.
