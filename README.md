@@ -95,9 +95,11 @@ protoc -I=api --nanopb_out=photon api/cat_feeder.proto
 
 #### Before you begin
 
-1.  Install JDK 11 from [here](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html) and set JAVA_HOME
+1.  Install JDK 11
+    (Linux: `apt install openjdk-11-jdk`,
+    Windows: [download this and set JAVA_HOME](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html))
 1.  Install Bazel from
-[here](https://docs.bazel.build/versions/master/install-windows.html#installing-menu).
+    [here](https://docs.bazel.build/versions/master/install-windows.html#installing-menu).
 
 #### Compiling & running
 
