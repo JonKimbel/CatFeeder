@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="backend" type="BlazeCommandRunConfigurationType" factoryName="Bazel Command">
-    <blaze-settings blaze-command="run" handler-id="BlazeCommandGenericRunConfigurationHandlerProvider">
+  <configuration default="false" name="build backend" type="BlazeCommandRunConfigurationType" factoryName="Bazel Command">
+    <blaze-settings handler-id="BlazeCommandGenericRunConfigurationHandlerProvider" blaze-command="build">
       <blaze-target>//com/jonkimbel/catfeeder/backend:backend</blaze-target>
     </blaze-settings>
     <method v="2">
