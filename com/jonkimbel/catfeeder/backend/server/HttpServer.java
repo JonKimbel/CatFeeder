@@ -110,8 +110,9 @@ public class HttpServer {
       Http.ContentType contentType, int contentLength) {
     // NOTE: we need to use CRLF (\r\n or println) instead of just \n.
     // HTTP/1.1 spec dictates that CRLF be used to end lines in the HTTP response header.
+    // We can't use println, since its behavior will change across platforms.
     printWriter.printf("HTTP/1.1 %s\r\n", response.getResponseCode());
-    printWriter.println("Server: JonKimbel/CatFeeder HttpServer");
+    printWriter.printf("Server: JonKimbel/CatFeeder HttpServer\r\n");
     if (response.getLocationUrl() != null) {
       printWriter.printf("Location: %s\r\n", response.getLocationUrl());
     }
@@ -126,7 +127,7 @@ public class HttpServer {
     printWriter.printf("Date: %s\r\n", HTTP_FORMATTER.format(ZonedDateTime.now()));
     printWriter.printf("Content-type: %s\r\n", contentType);
     printWriter.printf("Content-length: %d\r\n", contentLength);
-    printWriter.println();
+    printWriter.print("\r\n");
     printWriter.flush();
   }
 }
