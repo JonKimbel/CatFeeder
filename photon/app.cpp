@@ -80,6 +80,8 @@ void setup() {
 
   // Retract the servo in case the device reset while the motor was running.
   analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+  delay(SERVO_MOVE_DELAY_MS);
+  analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_DISABLE_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
 }
 
 void loop() {
@@ -117,6 +119,7 @@ void feed() {
     delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
     analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
     delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
+    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_DISABLE_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
   }
 }
 

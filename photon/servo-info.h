@@ -13,5 +13,6 @@
 // and gear orientations will vary.
 #define SERVO_EXTEND_DUTY_CYCLE 115
 #define SERVO_RETRACT_DUTY_CYCLE 211
+#define SERVO_DISABLE_DUTY_CYCLE 0
 
 #endif // SERVO_INFO_H
