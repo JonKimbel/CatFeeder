@@ -4,12 +4,12 @@ Feeds cat.
 
 ## Project Status
 
-*   V1 - MVP, reliable auto-feeder. 95% complete.
+*   V1 - MVP, reliable auto-feeder. **100% complete.**
 *   V2 - fancier & more robust auto-feeder with camera, cleaner code.
-    Not started.
-*   V3 - very clean & robust code. Not planned.
+    **Not started.**
+*   V3 - very clean & robust code. **Not planned.**
 
-## Setup
+## Repo Setup
 
 Run the following from this directory to set up the pre-commit checks.
 
@@ -58,7 +58,7 @@ Hot glue the following together:
 Insert threaded inserts in the blind holes (apart from the four holes used to
 mount the servo). Bolt everything together where bolt holes are present.
 
-## Compiling
+## Software
 
 ### API (backend + frontend)
 
@@ -101,7 +101,7 @@ protoc -I=api --nanopb_out=photon api/cat_feeder.proto
 1.  Install Bazel from
     [here](https://docs.bazel.build/versions/master/install-windows.html#installing-menu).
 
-#### Compiling & running
+#### Running locally
 
 To compile and run the server, run the following from this directory:
 
@@ -110,6 +110,45 @@ bazel run //com/jonkimbel/catfeeder/backend:backend
 ```
 
 OR open the IntelliJ project and run the `backend` configuration.
+
+#### Packaging a .jar
+
+To generate a deployable jar, run the following:
+
+```
+bazel build //com/jonkimbel/catfeeder/backend:backend_deploy.jar
+```
+
+The jar will be under `bazel-bin`, the output of the command will tell you
+exactly where.
+
+#### Deploying to a server
+
+Package up a jar and copy it to `/usr/lib/catfeeder` on the server.
+
+If you want to require a password for server access, create a text file at
+`/usr/lib/catfeeder/password.txt` containing the password (and nothing else).
+
+Create a file at `/etc/systemd/system/catfeeder@.service` like so:
+
+```
+[Unit]
+Description=catfeeder: runs the catfeeder server.
+
+[Service]
+Type=simple
+ExecStart= /usr/bin/java -jar /usr/lib/catfeeder/backend_deploy.jar
+
+[Install]
+WantedBy=default.target
+```
+
+Run `sudo systemctl enable catfeeder@catfeeder` to make this service start at
+system boot (important in case the server gets restarted), then run
+`sudo systemctl start catfeeder@catfeeder` to start the service immediately.
+
+If you ever need to debug a server deployed in this way, use
+`journalctl -u catfeeder@catfeeder` to inspect the STDOUT & STDERR.
 
 ### Particle Photon (cat feeder firmware)
 
