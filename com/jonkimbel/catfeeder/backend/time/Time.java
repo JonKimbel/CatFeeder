@@ -28,8 +28,8 @@ public class Time {
   // 366 cal/cup, each feeding is 1/12 cup, cat needs 180 cal/day.
   private static final int[] MORNING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 120 cal.
       6 * 60,  // 6 AM.
-      6 * 60 + 5,  // 6:05 AM.
       6 * 60 + 10,  // 6:10 AM.
+      12 * 60,  // Noon.
       18 * 60};  // 6 PM.
   private static final int[] EVENING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 60 cal.
       18 * 60 + 5,  // 6:05 PM.
