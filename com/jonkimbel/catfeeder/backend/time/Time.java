@@ -94,6 +94,18 @@ public class Time {
   public static ZonedDateTime getTimeOfNextFeeding() {
     ZonedDateTime now = ZonedDateTime.now(DEVICE_TIME_ZONE);
 
+    // TODO [V2]: the "feed asap" logic should be bundled together, this is just returning a time
+    // for display because "feed asap" skips this method when responding to the photon, and this
+    // conditional is only hypothesizing when the next feeding will be - the photon could fail to
+    // connect during its next checkin and the "last check in plus interval" would be wrong.
+    if (PreferencesStorage.get().getFeedingPreferences().getFeedAsap()) {
+      @Nullable ZonedDateTime lastCheckIn = getTimeOfLastCheckIn();
+      if (lastCheckIn == null) {
+        return now;
+      }
+      return getTimeOfLastCheckIn().plusNanos(INTERVAL_BETWEEN_CHECK_INS_MS * 1000);
+    }
+
     // Determine all of the feeding times we might need to feed.
     List<ZonedDateTime> upcomingFeedingTimes = new ArrayList<>();
     switch (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule()) {

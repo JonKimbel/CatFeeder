@@ -13,6 +13,7 @@ message Preferences {
   optional uint64 last_photon_check_in_ms_since_epoch = 2;
 }
 
+// Next ID: 7.
 message FeedingPreferences {
   reserved 2;
 
@@ -38,4 +39,8 @@ message FeedingPreferences {
   // The time at which the cat's feeding schedule was last changed.
   // Optional. Absence means the cat's feeding schedule has never changed.
   optional uint64 last_feeding_schedule_change_ms_since_epoch = 3;
+
+  // Indicates that the cat feeder should feed next time the device checks in.
+  // Optional.
+  optional bool feed_asap = 6;
 }

@@ -15,6 +15,7 @@ public class ActionDeterminer {
     // Logged-in actions.
     SERVE_HOME,
     UPDATE_PREFERENCES_REDIRECT_TO_HOME,
+    FEED_NOW_REDIRECT_TO_HOME,
     REDIRECT_TO_HOME,
 
     // Login actions.
@@ -75,10 +76,21 @@ public class ActionDeterminer {
       }
     }
 
-    if (requestHeader.method == Http.Method.GET) {
-      return Action.REDIRECT_TO_HOME;
-    } else {
-      return Action.NOT_IMPLEMENTED;
+    if (requestHeader.method == Http.Method.POST) {
+      if (requestHeader.path.equals("/")) {
+        return Action.UPDATE_PREFERENCES_REDIRECT_TO_HOME;
+      } else if (requestHeader.path.equals("/feednow")) {
+        return Action.FEED_NOW_REDIRECT_TO_HOME;
+      }
     }
+
+    if (requestHeader.method == Http.Method.GET) {
+      if (requestHeader.path.equals("/")) {
+        return Action.SERVE_HOME;
+      }
+      return Action.REDIRECT_TO_HOME;
+    }
+
+    return Action.NOT_IMPLEMENTED;
   }
 }

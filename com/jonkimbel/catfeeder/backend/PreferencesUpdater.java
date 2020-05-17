@@ -1,6 +1,7 @@
 package com.jonkimbel.catfeeder.backend;
 
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass;
+import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.Preferences;
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences;
 import com.jonkimbel.catfeeder.backend.proto.PreferencesOuterClass.FeedingPreferences.FeedingSchedule;
 import com.jonkimbel.catfeeder.backend.storage.api.PreferencesStorage;
@@ -11,13 +12,19 @@ import java.util.Map;
 
 public class PreferencesUpdater {
   public void update(Map<String, String> formKeysAndValues) {
-    PreferencesOuterClass.Preferences.Builder builder = PreferencesStorage.get().toBuilder();
+    Preferences.Builder builder = PreferencesStorage.get().toBuilder();
 
     updateFeedingSchedule(formKeysAndValues.get("feed_schedule"),
         builder.getFeedingPreferencesBuilder());
     updateScoopsPerFeeding(formKeysAndValues.get("number_of_scoops_per_feeding"),
         builder.getFeedingPreferencesBuilder());
 
+    PreferencesStorage.set(builder.build());
+  }
+
+  public void feedAsap() {
+    Preferences.Builder builder = PreferencesStorage.get().toBuilder();
+    builder.getFeedingPreferencesBuilder().setFeedAsap(true);
     PreferencesStorage.set(builder.build());
   }
 

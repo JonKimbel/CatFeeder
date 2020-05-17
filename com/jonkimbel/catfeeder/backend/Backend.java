@@ -67,9 +67,18 @@ public class Backend implements RequestHandler {
             .setHtmlBody(httpBodyRenderer.render(Template.INDEX))
             .setResponseCode(Http.ResponseCode.OK)
             .build();
+      case FEED_NOW_REDIRECT_TO_HOME:
+        preferencesUpdater.feedAsap();
+        return responseBuilder
+            .setResponseCode(Http.ResponseCode.FOUND)
+            .setLocation("/")
+            .build();
       case UPDATE_PREFERENCES_REDIRECT_TO_HOME:
         preferencesUpdater.update(MapParser.parsePostBody(requestBody));
-        // Fall through.
+        return responseBuilder
+            .setResponseCode(Http.ResponseCode.FOUND)
+            .setLocation("/")
+            .build();
       case REDIRECT_TO_HOME:
         return responseBuilder
             .setResponseCode(Http.ResponseCode.FOUND)

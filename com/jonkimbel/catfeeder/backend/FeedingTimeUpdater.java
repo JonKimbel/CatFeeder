@@ -30,6 +30,13 @@ public class FeedingTimeUpdater {
       preferencesBuilder.getFeedingPreferencesBuilder()
           .clearLastTenFeedingTimesMsSinceEpoch()
           .addAllLastTenFeedingTimesMsSinceEpoch(feedingHistory);
+
+      if (PreferencesStorage.get().getFeedingPreferences().getFeedAsap()) {
+        Preferences.Builder builder = PreferencesStorage.get().toBuilder();
+        builder.getFeedingPreferencesBuilder().clearFeedAsap();
+        PreferencesStorage.set(builder.build());
+      }
+
       wroteLastFeedingTime = true;
     }
 

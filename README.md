@@ -111,7 +111,7 @@ bazel run //com/jonkimbel/catfeeder/backend:backend
 
 OR open the IntelliJ project and run the `backend` configuration.
 
-#### Packaging a .jar
+#### Packaging a .jar {#jar}
 
 To generate a deployable jar, run the following:
 
@@ -124,7 +124,7 @@ exactly where.
 
 #### Deploying to a server
 
-Package up a jar and copy it to `/usr/lib/catfeeder` on the server.
+[Package up a jar](#jar) and copy it to `/usr/lib/catfeeder` on the server.
 
 If you want to require a password for server access, create a text file at
 `/usr/lib/catfeeder/password.txt` containing the password (and nothing else).
