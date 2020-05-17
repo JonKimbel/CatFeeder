@@ -23,19 +23,14 @@ public class FeedingTimeUpdater {
           preferencesBuilder.getFeedingPreferencesBuilder()
               .getLastTenFeedingTimesMsSinceEpochList());
       while (feedingHistory.size() >= 10) {
-        feedingHistory.remove(9);
+        feedingHistory.remove(feedingHistory.size() - 1);
       }
       feedingHistory.add(0, Instant.now().toEpochMilli() - request.getTimeSinceLastFeedingMs());
 
       preferencesBuilder.getFeedingPreferencesBuilder()
           .clearLastTenFeedingTimesMsSinceEpoch()
-          .addAllLastTenFeedingTimesMsSinceEpoch(feedingHistory);
-
-      if (PreferencesStorage.get().getFeedingPreferences().getFeedAsap()) {
-        Preferences.Builder builder = PreferencesStorage.get().toBuilder();
-        builder.getFeedingPreferencesBuilder().clearFeedAsap();
-        PreferencesStorage.set(builder.build());
-      }
+          .addAllLastTenFeedingTimesMsSinceEpoch(feedingHistory)
+          .clearFeedAsap();
 
       wroteLastFeedingTime = true;
     }

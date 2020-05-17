@@ -49,7 +49,7 @@ public class HttpBodyRenderer {
       templateValues.put("recent_feedings", feedingTimeString.toString());
     }
 
-    templateValues.put("next_feeding", Time.format(Time.getTimeOfNextFeeding()));
+    templateValues.put("next_feeding", Time.format(Time.getTimeOfNextFeedingForDisplay()));
     int scoopsPerFeeding = Math.max(
         feedingPrefs.getNumberOfScoopsPerFeeding(),
         /* min scoops per feeding */ 1);
