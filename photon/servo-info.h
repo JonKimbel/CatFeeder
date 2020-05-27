@@ -12,7 +12,17 @@
 // These values should be tuned by hand to fit the assembled product as servos
 // and gear orientations will vary.
 #define SERVO_EXTEND_DUTY_CYCLE 115
+#define SERVO_JIGGLE_EXTEND_DUTY_CYCLE 190
 #define SERVO_RETRACT_DUTY_CYCLE 211
 #define SERVO_DISABLE_DUTY_CYCLE 0
+
+// Set through testing, a bit high but guaranteed to be long enough for the
+// servo to move
+#define SERVO_MOVE_DELAY_MS 1500
+
+// Set arbitrarily. It's OK if we cut off the jiggle partway through a movement,
+// in fact it might impart more vibration to the hopper and loosen up the food
+// more.
+#define SERVO_JIGGLE_MOVE_DELAY_MS 100
 
 #endif // SERVO_INFO_H

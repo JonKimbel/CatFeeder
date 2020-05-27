@@ -14,15 +14,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 // CONSTANTS.
 
-#define SERVO_MOVE_DELAY_MS 1500
-
 #define MINIMUM_SCOOPS_TO_FEED 1
+
+#define JAM_PREVENTION_JIGGLE_COUNT 3
 
 ////////////////////////////////////////////////////////////////////////////////
 // METHOD DECLARATIONS.
 
 // Feeds the cat by running the servo.
 void feed();
+
+// Moves the servo between its retracted position and the position specified by
+// the duty cycle and delay. This oscillation is repeated N times, where
+// N = cycles.
+void cycle_servo(
+    uint32_t cycles, uint32_t extend_duty_cycle, uint32_t move_delay_ms);
 
 // Checks in with the server and updates variables.
 void check_in();
@@ -79,9 +85,16 @@ void setup() {
   pinMode(SERVO_PIN, OUTPUT);
 
   // Retract the servo in case the device reset while the motor was running.
-  analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+  analogWrite(
+      /* pin = */ SERVO_PIN,
+      /* value = */ SERVO_RETRACT_DUTY_CYCLE,
+      /* frequency = */ SERVO_PWM_FREQ);
   delay(SERVO_MOVE_DELAY_MS);
-  analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_DISABLE_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+  // Disable servo to prevent motor whine.
+  analogWrite(
+      /* pin = */ SERVO_PIN,
+      /* value = */ SERVO_DISABLE_DUTY_CYCLE,
+      /* frequency = */ SERVO_PWM_FREQ);
 }
 
 void loop() {
@@ -113,13 +126,45 @@ void loop() {
 }
 
 void feed() {
-  // Dispense food.
-  for (uint32_t i = 0; i < scoops_to_feed; i++) {
-    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_EXTEND_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
-    delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
-    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_RETRACT_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
-    delayAndUpdateVariables(SERVO_MOVE_DELAY_MS);
-    analogWrite(/* pin = */ SERVO_PIN, /* value = */ SERVO_DISABLE_DUTY_CYCLE, /* frequency = */ SERVO_PWM_FREQ);
+  // Jiggle.
+  cycle_servo(
+      /* cycles = */ JAM_PREVENTION_JIGGLE_COUNT,
+      /* extend_duty_cycle = */ SERVO_JIGGLE_EXTEND_DUTY_CYCLE,
+      /* move_delay_ms = */ SERVO_JIGGLE_MOVE_DELAY_MS);
+
+  // Feed.
+  cycle_servo(
+      /* cycles = */ scoops_to_feed,
+      /* extend_duty_cycle = */ SERVO_EXTEND_DUTY_CYCLE,
+      /* move_delay_ms = */ SERVO_MOVE_DELAY_MS);
+
+  // Jiggle.
+  cycle_servo(
+      /* cycles = */ JAM_PREVENTION_JIGGLE_COUNT,
+      /* extend_duty_cycle = */ SERVO_JIGGLE_EXTEND_DUTY_CYCLE,
+      /* move_delay_ms = */ SERVO_JIGGLE_MOVE_DELAY_MS);
+
+  // Disable servo to prevent motor whine.
+  analogWrite(
+      /* pin = */ SERVO_PIN,
+      /* value = */ SERVO_DISABLE_DUTY_CYCLE,
+      /* frequency = */ SERVO_PWM_FREQ);
+}
+
+void cycle_servo(
+    uint32_t cycles, uint32_t extend_duty_cycle, uint32_t move_delay_ms) {
+  for (uint32_t i = 0; i < cycles; i++) {
+    analogWrite(
+        /* pin = */ SERVO_PIN,
+        /* value = */ extend_duty_cycle,
+        /* frequency = */ SERVO_PWM_FREQ);
+    delayAndUpdateVariables(move_delay_ms);
+
+    analogWrite(
+        /* pin = */ SERVO_PIN,
+        /* value = */ SERVO_RETRACT_DUTY_CYCLE,
+        /* frequency = */ SERVO_PWM_FREQ);
+    delayAndUpdateVariables(move_delay_ms);
   }
 }
 
