@@ -4,7 +4,7 @@ on a Particle Photon.
 Before this code will compile, you will need to add a file named
 `backend-info.h` in this directory containing the following:
 
-```
+```cpp
 #ifndef BACKEND_INFO_H
 #define BACKEND_INFO_H
 

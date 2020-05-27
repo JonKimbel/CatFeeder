@@ -29,6 +29,9 @@ public class Backend implements RequestHandler {
   public static void main(String[] args) throws IOException {
     // TODO [V3]: take port as an argument.
     new Backend(PORT).runBlocking();
+
+    OutageNotifier.INSTANCE.alert(
+        "CatFeeder backend restarted!");
   }
 
   private Backend(int port) {
@@ -56,6 +59,9 @@ public class Backend implements RequestHandler {
       case SERVE_PHOTON:
         boolean wroteLastFeedingTime = feedingTimeUpdater.update(
             EmbeddedRequest.parseFrom(requestBody.getBytes()));
+            OutageNotifier.INSTANCE.alertIfNotCalledWithin(
+                Time.getTimeToNextCheckinMs() + 60000L,
+                "The CatFeeder is now 60s late for check-in!");
         return responseBuilder
             .setProtobufBody(protoBodyRenderer.render(wroteLastFeedingTime))
             .setResponseCode(Http.ResponseCode.OK)

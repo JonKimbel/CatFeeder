@@ -2,6 +2,9 @@
 # Backend Files
 # =========================
 
+# Personal Twilio account info that we don't want on github
+TwilioInfo.java
+
 # Ignore backup files.
 *~
 # Ignore Vim swap files.

@@ -16,6 +16,7 @@ maven_install(
     artifacts = [
         "org.xerial:sqlite-jdbc:3.30.1",
         "org.checkerframework:checker-qual:3.1.0",
+        "com.twilio.sdk:twilio:7.50.1",
     ],
     repositories = [
         "https://repo1.maven.org/maven2",

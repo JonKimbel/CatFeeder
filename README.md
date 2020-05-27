@@ -100,6 +100,8 @@ protoc -I=api --nanopb_out=photon api/cat_feeder.proto
     Windows: [download this and set JAVA_HOME](https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html))
 1.  Install Bazel from
     [here](https://docs.bazel.build/versions/master/install-windows.html#installing-menu).
+1.  Create a file at `com/jonkimbel/catfeeder/backend/alert/TwilioInfo.java`
+    according to [these docs](/com/jonkimbel/catfeeder/backend/alert/README.md).
 
 #### Running locally
 
