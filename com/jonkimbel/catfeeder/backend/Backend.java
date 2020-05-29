@@ -1,8 +1,10 @@
 package com.jonkimbel.catfeeder.backend;
 
 import com.jonkimbel.catfeeder.backend.ActionDeterminer.Action;
+import com.jonkimbel.catfeeder.backend.alert.OutageNotifier;
 import com.jonkimbel.catfeeder.backend.server.*;
 import com.jonkimbel.catfeeder.backend.template.Template;
+import com.jonkimbel.catfeeder.backend.time.Time;
 import com.jonkimbel.catfeeder.proto.CatFeeder.EmbeddedRequest;
 import com.jonkimbel.catfeeder.backend.server.HttpServer.RequestHandler;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -60,7 +62,7 @@ public class Backend implements RequestHandler {
         boolean wroteLastFeedingTime = feedingTimeUpdater.update(
             EmbeddedRequest.parseFrom(requestBody.getBytes()));
             OutageNotifier.INSTANCE.alertIfNotCalledWithin(
-                Time.getTimeToNextCheckinMs() + 60000L,
+                Time.getTimeToNextCheckInMs() + 60000L,
                 "The CatFeeder is now 60s late for check-in!");
         return responseBuilder
             .setProtobufBody(protoBodyRenderer.render(wroteLastFeedingTime))

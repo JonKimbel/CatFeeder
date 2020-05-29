@@ -4,7 +4,7 @@
 package(default_visibility = ["//com/jonkimbel/catfeeder/backend:__subpackages__"])
 
 java_library(
-    name = "outage_notifier",
+    name = "alert",
     srcs = [
         "OutageNotifier.java",
         "TwilioInfo.java"

@@ -18,6 +18,7 @@ java_binary(
     ],
     main_class = "com.jonkimbel.catfeeder.backend.Backend",
     deps = [
+        "//com/jonkimbel/catfeeder/backend/alert",
         "//com/jonkimbel/catfeeder/backend/server",
         "//com/jonkimbel/catfeeder/backend/server:map_parser",
         "//com/jonkimbel/catfeeder/backend/storage/api",
