@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import com.twilio.Twilio;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -35,12 +36,15 @@ public class OutageNotifier {
 
   /* Calling this method will send an SMS message to the admin. */
   public synchronized void alert(String message) {
-    Message
-        .creator(
+    Message twilioMessage =
+        Message.creator(
             /* to = */ new PhoneNumber(TwilioInfo.PHONE_NUMBER_TO_ALERT),
             /* from = */ new PhoneNumber(TwilioInfo.TWILIO_PHONE_NUMBER),
             /* message = */ message)
         .create();
+
+    System.out.printf("%s - sending message '%s', sid %s\n",
+        new Date(), message, twilioMessage.getSid());
   }
 
   private static TimerTask onTimeout(Runnable timeoutRunnable) {

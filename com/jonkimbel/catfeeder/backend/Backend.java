@@ -29,11 +29,11 @@ public class Backend implements RequestHandler {
   private final FeedingTimeUpdater feedingTimeUpdater = new FeedingTimeUpdater();
 
   public static void main(String[] args) throws IOException {
-    // TODO [V3]: take port as an argument.
-    new Backend(PORT).runBlocking();
-
     OutageNotifier.INSTANCE.alert(
         "CatFeeder backend restarted!");
+
+    // TODO [V3]: take port as an argument.
+    new Backend(PORT).runBlocking();
   }
 
   private Backend(int port) {
