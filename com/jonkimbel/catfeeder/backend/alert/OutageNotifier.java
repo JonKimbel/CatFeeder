@@ -27,7 +27,9 @@ public class OutageNotifier {
    */
   public synchronized void alertIfNotCalledWithin(
       long delayMs, String message) {
-    ongoingTimeout.cancel();
+    if (ongoingTimeout != null) {
+      ongoingTimeout.cancel();
+    }
 
     ongoingTimeout = onTimeout(() -> alert(message));
 
