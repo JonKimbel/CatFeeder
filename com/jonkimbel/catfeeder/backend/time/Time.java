@@ -25,15 +25,13 @@ public class Time {
   // TODO [V2]: rename these to "half calories" and "all calories".
   // TODO [V2]: maybe make the UI ask the user to type in a number of calories to feed per day along
   // with the number of calories the cat needs in one day.
-  // 366 cal/cup, each feeding is 1/12 cup, cat needs 180 cal/day.
-  private static final int[] MORNING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 150 cal.
+  // 366 cal/cup, each feeding is 1/8 cup (45 cal), cat needs 180+ cal/day.
+  private static final int[] MORNING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 135 cal.
       6 * 60,  // 6 AM.
-      6 * 60 + 5,  // 6:05 AM.
       6 * 60 + 10,  // 6:10 AM.
-      12 * 60,  // Noon.
       18 * 60};  // 6 PM.
-  private static final int[] EVENING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 60 cal.
-      18 * 60 + 5,  // 6:05 PM.
+  private static final int[] EVENING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 90 cal.
+      6 * 60 + 20,  // 6:20 AM.
       18 * 60 + 10};  // 6:10 PM.
   // Cat is manually feed 60 cal wet food in the evenings.
   private static final long INTERVAL_BETWEEN_CHECK_INS_MS = 10 * 60 * 1000; // 10 min.
