@@ -60,11 +60,11 @@ public class HttpBodyRenderer {
     templateValues.put("check_in_warning_time", Time.format(Time.getTimeOfLastCheckIn()));
 
     if (feedingPrefs.getFeedingSchedule() ==
-        FeedingPreferences.FeedingSchedule.AUTO_FEED_IN_MORNINGS) {
-      templateValues.put("feed_schedule_mornings", "checked");
+        FeedingPreferences.FeedingSchedule.FEED_HALF_CALORIES) {
+      templateValues.put("feed_schedule_half_calories", "checked");
     } else if (feedingPrefs.getFeedingSchedule() ==
-        FeedingPreferences.FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS) {
-      templateValues.put("feed_schedule_mornings_and_evenings", "checked");
+        FeedingPreferences.FeedingSchedule.FEED_ALL_CALORIES) {
+      templateValues.put("feed_schedule_all_calories", "checked");
     } else {
       templateValues.put("feed_schedule_never", "checked");
     }

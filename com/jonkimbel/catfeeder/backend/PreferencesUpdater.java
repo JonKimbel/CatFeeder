@@ -55,13 +55,13 @@ public class PreferencesUpdater {
     scheduleRecognized |= applyFeedingSchedule(
         builder,
         feedingScheduleArgument,
-        /* candidateScheduleString = */ "mornings",
-        /* candidateSchedule = */ FeedingSchedule.AUTO_FEED_IN_MORNINGS);
+        /* candidateScheduleString = */ "half_calories",
+        /* candidateSchedule = */ FeedingSchedule.FEED_HALF_CALORIES);
     scheduleRecognized |= applyFeedingSchedule(
         builder,
         feedingScheduleArgument,
-        /* candidateScheduleString = */ "mornings_and_evenings",
-        /* candidateSchedule = */ FeedingSchedule.AUTO_FEED_IN_MORNINGS_AND_EVENINGS);
+        /* candidateScheduleString = */ "all_calories",
+        /* candidateSchedule = */ FeedingSchedule.FEED_ALL_CALORIES);
     scheduleRecognized |= applyFeedingSchedule(
         builder,
         feedingScheduleArgument,

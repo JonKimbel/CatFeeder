@@ -20,8 +20,8 @@ message FeedingPreferences {
   enum FeedingSchedule {
     UNKNOWN_FEEDING_SCHEDULE = 0;
     NEVER_AUTO_FEED = 1;
-    AUTO_FEED_IN_MORNINGS = 2;
-    AUTO_FEED_IN_MORNINGS_AND_EVENINGS = 3;
+    FEED_HALF_CALORIES = 2;
+    FEED_ALL_CALORIES = 3;
   }
 
   // The schedule on which the cat should be fed.

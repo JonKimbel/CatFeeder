@@ -22,15 +22,14 @@ public class Time {
   private static final DateTimeFormatter TIME_FORMATTER =
       DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM);
   private static final ZoneId DEVICE_TIME_ZONE = ZoneId.of("US/Pacific");
-  // TODO [V2]: rename these to "half calories" and "all calories".
   // TODO [V2]: maybe make the UI ask the user to type in a number of calories to feed per day along
   // with the number of calories the cat needs in one day.
   // 366 cal/cup, each feeding is 1/8 cup (45 cal), cat needs 180+ cal/day.
-  private static final int[] MORNING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 135 cal.
+  private static final int[] HALF_CALORIE_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 135 cal.
       6 * 60,  // 6 AM.
       6 * 60 + 10,  // 6:10 AM.
       18 * 60};  // 6 PM.
-  private static final int[] EVENING_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 90 cal.
+  private static final int[] REMAINING_CALORIE_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 90 cal.
       6 * 60 + 20,  // 6:20 AM.
       18 * 60 + 10};  // 6:10 PM.
   // Cat is manually feed 60 cal wet food in the evenings.
@@ -109,12 +108,12 @@ public class Time {
     // Determine all of the feeding times we might need to feed.
     List<ZonedDateTime> upcomingFeedingTimes = new ArrayList<>();
     switch (PreferencesStorage.get().getFeedingPreferences().getFeedingSchedule()) {
-      case AUTO_FEED_IN_MORNINGS:
-        addFeedingTimes(upcomingFeedingTimes, MORNING_FEEDING_TIMES_MINUTES_INTO_DAY);
+      case FEED_HALF_CALORIES:
+        addFeedingTimes(upcomingFeedingTimes, HALF_CALORIE_FEEDING_TIMES_MINUTES_INTO_DAY);
         break;
-      case AUTO_FEED_IN_MORNINGS_AND_EVENINGS:
-        addFeedingTimes(upcomingFeedingTimes, MORNING_FEEDING_TIMES_MINUTES_INTO_DAY);
-        addFeedingTimes(upcomingFeedingTimes, EVENING_FEEDING_TIMES_MINUTES_INTO_DAY);
+      case FEED_ALL_CALORIES:
+        addFeedingTimes(upcomingFeedingTimes, HALF_CALORIE_FEEDING_TIMES_MINUTES_INTO_DAY);
+        addFeedingTimes(upcomingFeedingTimes, REMAINING_CALORIE_FEEDING_TIMES_MINUTES_INTO_DAY);
         break;
       default:
         break;
