@@ -27,11 +27,10 @@ public class Time {
   //
   // 366 cal/cup, each feeding is 1/8 cup (46 cal),
   // cat gets ~63 cal wet food/day, cat needs 180+ cal/day.
-  private static final int[] HALF_CALORIE_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 135 cal.
+  private static final int[] HALF_CALORIE_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 92 cal.
       6 * 60,  // 6 AM.
-      6 * 60 + 10,  // 6:10 AM.
       18 * 60};  // 6 PM.
-  private static final int[] REMAINING_CALORIE_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 90 cal.
+  private static final int[] REMAINING_CALORIE_FEEDING_TIMES_MINUTES_INTO_DAY = new int[] { // 92 cal.
       6 * 60 + 20,  // 6:20 AM.
       18 * 60 + 10};  // 6:10 PM.
   // Cat is manually feed 60 cal wet food in the evenings.
